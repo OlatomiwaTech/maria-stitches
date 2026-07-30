@@ -6,13 +6,13 @@ import { HeroStats } from "./HeroStats";
 
 export function HeroContent() {
   return (
-    <div className="max-w-xl">
-      <Badge>Premium Tailoring • Since 2022</Badge>
+    <div className="max-w-2xl text-foreground">
+      <Badge>Maria Stitches · Sango Ota, Nigeria</Badge>
 
       <div className="mt-6">
         <Heading
-          title="Elegance, Tailored Just for You."
-          subtitle="Maria Stitches creates premium custom outfits and ready-to-wear fashion for women and girls with craftsmanship, attention to detail, and timeless style."
+          title="Made for the moment you will always remember."
+          subtitle="An intimate tailoring house creating refined custom pieces and ready-to-wear silhouettes for women and girls who dress with intention."
         />
       </div>
 

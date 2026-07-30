@@ -11,11 +11,11 @@ export function NavLogo() {
       </div>
 
       <div>
-        <p className="font-serif text-xl font-semibold tracking-wide text-stone-900">
+        <p className="font-serif text-xl font-semibold tracking-wide text-stone-900 transition-colors duration-300 dark:text-stone-100">
           Maria Stitches
         </p>
 
-        <p className="text-xs uppercase tracking-[0.3em] text-stone-500">
+        <p className="text-xs uppercase tracking-[0.3em] text-stone-500 transition-colors duration-300 dark:text-stone-400">
           Since 2022
         </p>
       </div>
