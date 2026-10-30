@@ -4,13 +4,13 @@ import { ArrowDown, ArrowRight, ArrowUpRight, Menu, MessageCircle, Phone, Scisso
 import './style.css';
 
 const looks = [
-  { name: 'The occasion edit', type: 'Celebration, made unforgettable', image: 'photo-1539109136881-3be0616acf4b', alt: 'Model in a sculptural evening dress' },
-  { name: 'Modern heritage', type: 'Our roots, reimagined', image: 'photo-1534528741775-53994a69daeb', alt: 'Portrait in vibrant, elegant style' },
-  { name: 'Everyday, elevated', type: 'Quiet confidence in every stitch', image: 'photo-1483985988355-763728e1935b', alt: 'Woman wearing a tailored modern outfit' },
+  { name: 'Aso-ebi & celebrations', type: 'For the days everyone remembers', image: 'photo-1539109136881-3be0616acf4b', alt: 'Model in a sculptural celebration dress' },
+  { name: 'Bridal & traditional', type: 'A look that feels like your story', image: 'photo-1534528741775-53994a69daeb', alt: 'Portrait in vibrant, elegant style' },
+  { name: 'Modern classics', type: 'Made for the moments in between', image: 'photo-1483985988355-763728e1935b', alt: 'Woman wearing a tailored modern outfit' },
 ];
 const publicPhone = '+2348033646143';
 const whatsappNumber = publicPhone.replace(/\D/g, '');
-const whatsappMessage = encodeURIComponent('Hello Maria Stitches, I’d like to enquire about a piece.');
+const whatsappLink = (style = '') => `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(style ? `Hello Maria Stitches, I’m interested in ${style}. Could you tell me more?` : 'Hello Maria Stitches, I’d like to enquire about a piece.')}`;
 
 function App() {
   const [menuOpen, setMenuOpen] = React.useState(false);
@@ -40,7 +40,7 @@ function App() {
     <header className="site-header">
       <a className="wordmark" href="#home" aria-label="Maria Stitches home"><span className="wordmark-icon"><Scissors size={17} strokeWidth={1.5} /></span><span>MARIA <i>STITCHES</i><small>THE ATELIER · LAGOS</small></span></a>
       <nav className={menuOpen ? 'nav open' : 'nav'} aria-label="Main navigation">
-        <a href="#atelier" onClick={() => setMenuOpen(false)}>The atelier</a><a href="#services" onClick={() => setMenuOpen(false)}>What we make</a><a href="#collection" onClick={() => setMenuOpen(false)}>The edit</a>
+        <a href="#atelier" onClick={() => setMenuOpen(false)}>The atelier</a><a href="#services" onClick={() => setMenuOpen(false)}>What we make</a><a href="#styles" onClick={() => setMenuOpen(false)}>Styles</a>
         <a className="mobile-book" href="#book" onClick={() => setMenuOpen(false)}>Book a consultation <ArrowUpRight size={15} /></a>
       </nav>
       <a className="header-cta" href="#book">Book a consultation <ArrowUpRight size={15} /></a>
@@ -53,7 +53,7 @@ function App() {
           <span className="eyebrow"><span className="eyebrow-line" /> MADE FOR YOUR MOMENT</span>
           <h1>Wear the feeling<br />of <em>being you.</em></h1>
           <p>Thoughtful tailoring for the woman who knows that the best-dressed version of herself is simply herself.</p>
-          <div className="hero-actions"><a className="button button-dark" href="#book">Let’s make something <ArrowRight size={16} /></a><a className="text-link" href="#collection">Explore the atelier <ArrowDown size={14} /></a></div>
+          <div className="hero-actions"><a className="button button-dark" href="#book">Let’s make something <ArrowRight size={16} /></a><a className="text-link" href="#styles">Explore the styles <ArrowDown size={14} /></a></div>
           <div className="hero-note"><span className="note-stars">✳ ✳ ✳ ✳ ✳</span><span>Hand-finished in Lagos<br /><b>Made with intention, always.</b></span></div>
         </div>
         <div className="hero-image-wrap">
@@ -79,18 +79,19 @@ function App() {
         </div>
       </section>
 
-      <section className="collection" id="collection">
-        <div className="collection-top"><div><span className="eyebrow"><span className="eyebrow-line" /> THE MARIA STITCHES WORLD</span><h2>Pieces with <em>presence.</em></h2></div><a className="underlined" href="#book">Start your own story <ArrowRight size={14} /></a></div>
-        <div className="looks-grid">{looks.map((look, index) => <article className={`look look-${index + 1}`} key={look.name}><div className="look-image"><img src={`https://images.unsplash.com/${look.image}?auto=format&fit=crop&w=900&q=85`} alt={look.alt} loading="lazy" /><span className="look-index">0{index + 1}</span></div><div className="look-caption"><div><span>{look.type}</span><h3>{look.name}</h3></div><a href="#book" aria-label={`Enquire about ${look.name}`}><ArrowUpRight size={17} /></a></div></article>)}</div>
+      <section className="collection" id="styles">
+        <div className="collection-top"><div><span className="eyebrow"><span className="eyebrow-line" /> FIND YOUR MARIA STITCHES LOOK</span><h2>Made for your <em>moment.</em></h2></div><a className="underlined" href={whatsappLink()} target="_blank" rel="noreferrer">Ask us on WhatsApp <MessageCircle size={14} /></a></div>
+        <div className="looks-grid">{looks.map((look, index) => <article className={`look look-${index + 1}`} key={look.name}><div className="look-image"><img src={`https://images.unsplash.com/${look.image}?auto=format&fit=crop&w=900&q=85`} alt={look.alt} loading="lazy" /><span className="look-index">0{index + 1}</span></div><div className="look-caption"><div><span>{look.type}</span><h3>{look.name}</h3></div><a className="look-whatsapp" href={whatsappLink(look.name)} target="_blank" rel="noreferrer" aria-label={`Ask about ${look.name} on WhatsApp`}><MessageCircle size={14} /><span>Ask on WhatsApp</span></a></div></article>)}</div>
       </section>
 
       <section className="quote-block"><div className="quote-mark">“</div><blockquote>It’s not just about what you wear.<br />It’s about <em>how you arrive.</em></blockquote><span>MARIA STITCHES · LAGOS, NIGERIA</span><div className="quote-decoration">MS</div></section>
 
-      <section className="booking" id="book"><div className="booking-info"><span className="eyebrow"><span className="eyebrow-line" /> THE FIRST FITTING</span><h2>Let’s make<br />it <em>personal.</em></h2><p>Tell us what you have in mind. We’ll find a time to talk through the details, the fabric, and all the little things that make it yours.</p><div className="booking-contact"><span>Rather chat or call?</span><a href={`https://wa.me/${whatsappNumber}?text=${whatsappMessage}`} target="_blank" rel="noreferrer"><MessageCircle size={15} /> WhatsApp Maria <ArrowUpRight size={14} /></a><a href={`tel:${publicPhone}`}><Phone size={14} /> {publicPhone} <ArrowUpRight size={14} /></a></div></div>
+      <section className="booking" id="book"><div className="booking-info"><span className="eyebrow"><span className="eyebrow-line" /> THE FIRST FITTING</span><h2>Let’s make<br />it <em>personal.</em></h2><p>Tell us what you have in mind. We’ll find a time to talk through the details, the fabric, and all the little things that make it yours.</p><div className="booking-contact"><span>Rather chat or call?</span><a href={whatsappLink()} target="_blank" rel="noreferrer"><MessageCircle size={15} /> WhatsApp Maria <ArrowUpRight size={14} /></a><a href={`tel:${publicPhone}`}><Phone size={14} /> +234 803 364 6143 <ArrowUpRight size={14} /></a></div></div>
         <form className="booking-form" onSubmit={submitBooking}><div className="form-heading"><span>01 — YOUR CONSULTATION</span><span>Usually takes 2 minutes</span></div><label>Your name<input required autoComplete="name" placeholder="What should we call you?" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} /></label><label>Email address<input required type="email" autoComplete="email" placeholder="you@example.com" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} /></label><label>What are you looking for?<select value={form.service} onChange={e => setForm({ ...form, service: e.target.value })}><option>Bespoke occasionwear</option><option>Made-to-measure essentials</option><option>Wardrobe refresh</option><option>Something else</option></select></label><label>A little more about it<textarea rows="2" placeholder="The occasion, the idea, anything you know so far…" value={form.message} onChange={e => setForm({ ...form, message: e.target.value })} /></label><button className="button button-dark form-submit" disabled={sending}>{sending ? 'Sending your note…' : 'Request a consultation'} <ArrowRight size={16} /></button>{status && <p className="form-status" role="status">{status}</p>}<p className="form-footnote">No pressure, no commitment. Just a good conversation.</p></form>
       </section>
     </main>
-    <footer className="footer"><a className="wordmark footer-mark" href="#home"><span className="wordmark-icon"><Scissors size={17} strokeWidth={1.5} /></span><span>MARIA <i>STITCHES</i><small>THE ATELIER · LAGOS</small></span></a><span className="footer-note">Made with intention, in Lagos.</span><div className="footer-links"><a href="#atelier">Our story</a><a href="#services">Services</a><a href="#book">Get in touch</a><a href="https://instagram.com" target="_blank" rel="noreferrer">Instagram <ArrowUpRight size={12} /></a></div><span className="copyright">© {new Date().getFullYear()} MARIA STITCHES</span></footer>
+    <a className="whatsapp-float" href={whatsappLink()} target="_blank" rel="noreferrer" aria-label="Chat with Maria Stitches on WhatsApp"><MessageCircle size={19} /><span>Chat on WhatsApp</span></a>
+    <footer className="footer"><a className="wordmark footer-mark" href="#home"><span className="wordmark-icon"><Scissors size={17} strokeWidth={1.5} /></span><span>MARIA <i>STITCHES</i><small>THE ATELIER · LAGOS</small></span></a><span className="footer-note">Made with intention, in Lagos.</span><div className="footer-links"><a href="#atelier">Our story</a><a href="#styles">Styles</a><a href="#book">Get in touch</a><a href={whatsappLink()} target="_blank" rel="noreferrer">WhatsApp <ArrowUpRight size={12} /></a></div><span className="copyright">© {new Date().getFullYear()} MARIA STITCHES</span></footer>
   </>;
 }
 
