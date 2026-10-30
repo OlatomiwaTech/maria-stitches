@@ -3,6 +3,9 @@ import { CartProviderShell } from '@/components/cart/cart-provider-shell';
 import { SiteHeader } from '@/components/site-header';
 import { SiteFooter } from '@/components/site-footer';
 import { WhatsAppFloat } from '@/components/whatsapp-float';
+import { SiteSettingsProvider } from '@/components/site-settings-provider';
+import { getSiteSettings } from '@/lib/site-settings';
+import type { CSSProperties } from 'react';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -19,6 +22,14 @@ export const metadata: Metadata = {
   robots: { index: true, follow: true },
 };
 
-export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="en-NG" data-scroll-behavior="smooth"><body><CartProviderShell><SiteHeader />{children}<SiteFooter /><WhatsAppFloat /></CartProviderShell></body></html>;
+export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  const settings = await getSiteSettings();
+  const colors = {
+    '--espresso': settings.colors.espresso,
+    '--paper': settings.colors.ivory,
+    '--burgundy': settings.colors.burgundy,
+    '--beige': settings.colors.beige,
+    '--champagne': settings.colors.champagne,
+  } as CSSProperties;
+  return <html lang="en-NG" data-scroll-behavior="smooth"><body style={colors}><CartProviderShell><SiteSettingsProvider settings={settings}><SiteHeader />{children}<SiteFooter settings={settings} /><WhatsAppFloat settings={settings} /></SiteSettingsProvider></CartProviderShell></body></html>;
 }
