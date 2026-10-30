@@ -1,6 +1,6 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import { ArrowDown, ArrowRight, ArrowUpRight, Menu, Scissors, Sparkles, X } from 'lucide-react';
+import { ArrowDown, ArrowRight, ArrowUpRight, Menu, MessageCircle, Phone, Scissors, Sparkles, X } from 'lucide-react';
 import './style.css';
 
 const looks = [
@@ -8,6 +8,9 @@ const looks = [
   { name: 'Modern heritage', type: 'Our roots, reimagined', image: 'photo-1534528741775-53994a69daeb', alt: 'Portrait in vibrant, elegant style' },
   { name: 'Everyday, elevated', type: 'Quiet confidence in every stitch', image: 'photo-1483985988355-763728e1935b', alt: 'Woman wearing a tailored modern outfit' },
 ];
+const publicPhone = '+2348033646143';
+const whatsappNumber = publicPhone.replace(/\D/g, '');
+const whatsappMessage = encodeURIComponent('Hello Maria Stitches, I’d like to enquire about a piece.');
 
 function App() {
   const [menuOpen, setMenuOpen] = React.useState(false);
@@ -83,7 +86,7 @@ function App() {
 
       <section className="quote-block"><div className="quote-mark">“</div><blockquote>It’s not just about what you wear.<br />It’s about <em>how you arrive.</em></blockquote><span>MARIA STITCHES · LAGOS, NIGERIA</span><div className="quote-decoration">MS</div></section>
 
-      <section className="booking" id="book"><div className="booking-info"><span className="eyebrow"><span className="eyebrow-line" /> THE FIRST FITTING</span><h2>Let’s make<br />it <em>personal.</em></h2><p>Tell us what you have in mind. We’ll find a time to talk through the details, the fabric, and all the little things that make it yours.</p><div className="booking-contact"><span>Prefer to say hello directly?</span><a href="mailto:hello@mariastitches.com">hello@mariastitches.com <ArrowUpRight size={14} /></a></div></div>
+      <section className="booking" id="book"><div className="booking-info"><span className="eyebrow"><span className="eyebrow-line" /> THE FIRST FITTING</span><h2>Let’s make<br />it <em>personal.</em></h2><p>Tell us what you have in mind. We’ll find a time to talk through the details, the fabric, and all the little things that make it yours.</p><div className="booking-contact"><span>Rather chat or call?</span><a href={`https://wa.me/${whatsappNumber}?text=${whatsappMessage}`} target="_blank" rel="noreferrer"><MessageCircle size={15} /> WhatsApp Maria <ArrowUpRight size={14} /></a><a href={`tel:${publicPhone}`}><Phone size={14} /> {publicPhone} <ArrowUpRight size={14} /></a></div></div>
         <form className="booking-form" onSubmit={submitBooking}><div className="form-heading"><span>01 — YOUR CONSULTATION</span><span>Usually takes 2 minutes</span></div><label>Your name<input required autoComplete="name" placeholder="What should we call you?" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} /></label><label>Email address<input required type="email" autoComplete="email" placeholder="you@example.com" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} /></label><label>What are you looking for?<select value={form.service} onChange={e => setForm({ ...form, service: e.target.value })}><option>Bespoke occasionwear</option><option>Made-to-measure essentials</option><option>Wardrobe refresh</option><option>Something else</option></select></label><label>A little more about it<textarea rows="2" placeholder="The occasion, the idea, anything you know so far…" value={form.message} onChange={e => setForm({ ...form, message: e.target.value })} /></label><button className="button button-dark form-submit" disabled={sending}>{sending ? 'Sending your note…' : 'Request a consultation'} <ArrowRight size={16} /></button>{status && <p className="form-status" role="status">{status}</p>}<p className="form-footnote">No pressure, no commitment. Just a good conversation.</p></form>
       </section>
     </main>
