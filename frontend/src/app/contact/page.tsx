@@ -4,7 +4,7 @@ import { getSiteSettings } from '@/lib/site-settings';
 import { siteWhatsAppUrl } from '@/lib/whatsapp';
 import { Button } from '@/components/ui/button';
 
-export const metadata: Metadata = { title: 'Contact Maria Stitches', description: 'Contact Maria Stitches in Sango Ota, Ogun State, Nigeria.' };
+export const metadata: Metadata = { title: 'Contact Maria Stitches', description: 'Contact Maria Stitches in Sango Ota, Ogun State, Nigeria.', alternates: { canonical: '/contact' } };
 
 export default async function ContactPage() {
   const settings = await getSiteSettings();

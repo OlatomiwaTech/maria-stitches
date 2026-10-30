@@ -4,7 +4,7 @@ import { CustomOrderForm } from '@/components/custom-order-form';
 import { getSiteSettings } from '@/lib/site-settings';
 import { siteWhatsAppUrl } from '@/lib/whatsapp';
 
-export const metadata: Metadata = { title: 'Custom-made enquiry', description: 'Tell Maria Stitches about a custom-made outfit you have in mind.' };
+export const metadata: Metadata = { title: 'Custom-made enquiry', description: 'Tell Maria Stitches about a custom-made outfit you have in mind.', alternates: { canonical: '/custom-order' } };
 
 export default async function CustomOrderPage() {
   const settings = await getSiteSettings();

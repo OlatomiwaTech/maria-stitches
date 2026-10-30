@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { getSiteSettings } from '@/lib/site-settings';
 
-export const metadata: Metadata = { title: 'Frequently asked questions', description: 'Answers about sample styles, custom-made enquiries and pickup from Maria Stitches.' };
+export const metadata: Metadata = { title: 'Frequently asked questions', description: 'Answers about sample styles, custom-made enquiries and pickup from Maria Stitches.', alternates: { canonical: '/faq' } };
 
 const faqs = [
   ['Are the products shown currently available?', 'The initial catalogue contains sample styles and photographs. Please message Maria Stitches to confirm actual designs, price and availability before placing a request.'],

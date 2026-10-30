@@ -4,7 +4,7 @@ import { ArrowRight, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { getSiteSettings } from '@/lib/site-settings';
 
-export const metadata: Metadata = { title: 'About', description: 'Learn about Maria Stitches, a fashion and tailoring business in Sango Ota, Ogun State.' };
+export const metadata: Metadata = { title: 'About', description: 'Learn about Maria Stitches, a fashion and tailoring business in Sango Ota, Ogun State.', alternates: { canonical: '/about' } };
 
 export default async function AboutPage() {
   const settings = await getSiteSettings();
