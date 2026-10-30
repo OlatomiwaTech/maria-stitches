@@ -7,19 +7,21 @@ import { ArrowLeft, MessageCircle, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { DemoNotice } from '@/components/demo-notice';
 import { useCart } from '@/components/cart/cart-provider';
-import { brand, whatsappUrl } from '@/lib/brand';
+import { siteWhatsAppUrl } from '@/lib/site-settings';
+import { useSiteSettings } from '@/components/site-settings-provider';
 import { formatNaira } from '@/lib/utils';
 import type { CartLine } from '@/lib/types';
 
 type OrderResponse = { reference: string; whatsappUrl: string; totalEstimateNgn: number };
 
-function demoMessage(lines: CartLine[], name: string, phone: string) {
+function demoMessage(lines: CartLine[], name: string, phone: string, businessName: string) {
   const items = lines.map((line, index) => `${index + 1}. ${line.name}\n   Size: ${line.size}\n   Quantity: ${line.quantity}\n   Illustrative price: ${formatNaira(line.unitPriceNgn)} each`).join('\n\n');
-  return `Hello ${brand.name}!\n\nI am interested in these sample styles:\n\n${items}\n\nMy name: ${name || '[Your name]'}\nPhone: ${phone || '[Your phone number]'}\n\nI understand that these are sample photographs, prices and designs. Please let me know what is currently available.\n\nThank you!`;
+  return `Hello ${businessName}!\n\nI am interested in these sample styles:\n\n${items}\n\nMy name: ${name || '[Your name]'}\nPhone: ${phone || '[Your phone number]'}\n\nI understand that these are sample photographs, prices and designs. Please let me know what is currently available.\n\nThank you!`;
 }
 
 export function CartPage() {
   const { lines, totalNgn, setQuantity, remove, clear, ready } = useCart();
+  const settings = useSiteSettings();
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [note, setNote] = useState('');
@@ -27,7 +29,7 @@ export function CartPage() {
   const [error, setError] = useState('');
   const [order, setOrder] = useState<OrderResponse | null>(null);
   const demoOnly = lines.some((line) => line.isDemo);
-  const demoChat = whatsappUrl(demoMessage(lines, name, phone));
+  const demoChat = siteWhatsAppUrl(settings.whatsappNumber, demoMessage(lines, name, phone, settings.businessName));
 
   async function submitOrder(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();

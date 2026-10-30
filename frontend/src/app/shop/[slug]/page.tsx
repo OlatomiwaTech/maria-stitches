@@ -12,7 +12,6 @@ type Props = { params: Promise<{ slug: string }> };
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const { products } = await getCatalog();
-  const settings = await getSiteSettings();
   const product = products.find((item) => item.slug === slug);
   return product ? { title: product.name, description: product.description, openGraph: { images: product.images[0]?.url ? [product.images[0].url] : [] } } : { title: 'Style not found' };
 }
@@ -20,6 +19,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function ProductPage({ params }: Props) {
   const { slug } = await params;
   const { products } = await getCatalog();
+  const settings = await getSiteSettings();
   const product = products.find((item) => item.slug === slug);
   if (!product) notFound();
   return <main className="page-shell">
