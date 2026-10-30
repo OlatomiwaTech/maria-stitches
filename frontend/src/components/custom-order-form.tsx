@@ -3,19 +3,21 @@
 import { useState, type FormEvent } from 'react';
 import { ArrowUpRight, ImagePlus, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { brand, whatsappUrl } from '@/lib/brand';
+import { useSiteSettings } from '@/components/site-settings-provider';
+import { siteWhatsAppUrl } from '@/lib/site-settings';
 
 const categories = ['Dresses and Gowns', 'Two-Piece Outfits', 'Native and Traditional Wear', 'Trousers and Shirts', "Children's Clothing", 'Other'];
 const imageTypes = ['image/jpeg', 'image/png', 'image/webp'];
 
 export function CustomOrderForm() {
+  const settings = useSiteSettings();
   const [form, setForm] = useState({ name: '', phone: '', category: categories[0], description: '', size: '', desiredDate: '', notes: '' });
   const [image, setImage] = useState<File | null>(null);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [fallbackLink, setFallbackLink] = useState<string | null>(null);
-  const fallbackText = `Hello ${brand.name}, I would like to ask about a custom-made outfit.\n\nName: ${form.name}\nPhone: ${form.phone}\nCategory: ${form.category}\nDescription: ${form.description}\nPreferred size: ${form.size || 'To discuss'}\nDesired date: ${form.desiredDate || 'To discuss'}\nNotes: ${form.notes || 'None'}\n\nI can share an inspiration photo in the chat.`;
+  const fallbackText = `Hello ${settings.businessName}, I would like to ask about a custom-made outfit.\n\nName: ${form.name}\nPhone: ${form.phone}\nCategory: ${form.category}\nDescription: ${form.description}\nPreferred size: ${form.size || 'To discuss'}\nDesired date: ${form.desiredDate || 'To discuss'}\nNotes: ${form.notes || 'None'}\n\nI can share an inspiration photo in the chat.`;
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault(); setPending(true); setError(''); setSuccess(''); setFallbackLink(null);
@@ -32,10 +34,10 @@ export function CustomOrderForm() {
       const reference = data && typeof data === 'object' && 'reference' in data && typeof data.reference === 'string' ? data.reference : 'received';
       const photoWarning = data && typeof data === 'object' && 'photoWarning' in data && typeof data.photoWarning === 'string' ? data.photoWarning : '';
       setSuccess(`Thank you. Your custom enquiry is saved as ${reference}. You can continue the conversation on WhatsApp.${photoWarning ? ` ${photoWarning}` : ''}`);
-      setFallbackLink(whatsappUrl(`${fallbackText}\n\nEnquiry reference: ${reference}`));
+      setFallbackLink(siteWhatsAppUrl(settings.whatsappNumber, `${fallbackText}\n\nEnquiry reference: ${reference}`));
     } catch (submitError) {
       setError(submitError instanceof Error ? submitError.message : 'We could not save your enquiry.');
-      setFallbackLink(whatsappUrl(fallbackText));
+      setFallbackLink(siteWhatsAppUrl(settings.whatsappNumber, fallbackText));
     } finally { setPending(false); }
   }
 
