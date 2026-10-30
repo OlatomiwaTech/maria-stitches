@@ -7,7 +7,7 @@ type CartContextValue = {
   lines: CartLine[];
   count: number;
   totalNgn: number;
-  add: (product: Product, variantId: string, quantity?: number) => void;
+  add: (product: Product, variantId: string, quantity?: number) => boolean;
   setQuantity: (variantId: string, quantity: number) => void;
   remove: (variantId: string) => void;
   clear: () => void;
@@ -41,10 +41,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const add = useCallback((product: Product, variantId: string, quantity = 1) => {
     const variant = product.variants.find((item) => item.id === variantId);
-    if (!variant?.available || quantity < 1 || quantity > 10) return;
+    const quantityLimit = product.isDemo ? 10 : Math.min(10, variant?.stockQuantity ?? 0);
+    if (!variant?.available || !Number.isInteger(quantity) || quantity < 1 || quantity > quantityLimit) return false;
     setLines((previous) => {
       const existing = previous.find((line) => line.variantId === variantId);
-      if (existing) return previous.map((line) => line.variantId === variantId ? { ...line, quantity: Math.min(10, line.quantity + quantity) } : line);
+      if (existing) return previous.map((line) => line.variantId === variantId ? { ...line, quantity: Math.min(quantityLimit, line.quantity + quantity) } : line);
       return [...previous, {
         productId: product.id,
         variantId,
@@ -58,6 +59,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         isDemo: product.isDemo,
       }];
     });
+    return true;
   }, []);
 
   const setQuantity = useCallback((variantId: string, quantity: number) => {
