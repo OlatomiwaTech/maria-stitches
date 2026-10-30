@@ -48,7 +48,7 @@ export default async function HomePage() {
         const image = catalog.products.find((product) => product.category.slug === category.slug)?.images[0];
         return <Reveal key={category.slug} delay={index * 60}><Link className={image ? 'category-card has-image' : 'category-card'} href={`/shop?category=${category.slug}`}>
           {image && <Image className="category-image" src={image.url} alt={`Illustrative sample fashion image for ${category.name}; not a confirmed Maria Stitches design.`} fill sizes="(max-width: 700px) 45vw, 20vw" />}
-          <span className="category-number">0{index + 1} / CATEGORY</span><h3>{category.name}</h3>
+          <span className="category-number">0{index + 1} / CATEGORY</span><h3>{category.name}</h3><span className="category-card-cta">Explore styles <ArrowRight size={13} aria-hidden="true" /></span>
         </Link></Reveal>;
       })}</div>
     </section>

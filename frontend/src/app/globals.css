@@ -681,6 +681,32 @@ button,input,select,textarea{font:inherit}
   color: rgb(255 255 255 / 76%);
 }
 
+.category-card-cta {
+  position: relative;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 18px;
+  color: var(--burgundy);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+.category-card.has-image .category-card-cta {
+  color: #fff;
+}
+
+.category-card-cta svg {
+  transition: transform 180ms ease;
+}
+
+.category-card:hover .category-card-cta svg {
+  transform: translateX(3px);
+}
+
 .category-card.has-image:hover .category-image {
   transform: scale(1.045);
 }
