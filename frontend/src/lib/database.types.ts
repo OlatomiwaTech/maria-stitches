@@ -1,0 +1,25 @@
+export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
+
+export type Database = {
+  public: {
+    Tables: {
+      profiles: { Row: { id: string; role: 'admin'; display_name: string | null; created_at: string }; Insert: { id: string; role?: 'admin'; display_name?: string | null }; Update: { role?: 'admin'; display_name?: string | null }; Relationships: [] };
+      categories: { Row: { id: string; name: string; slug: string; description: string | null; sort_order: number; is_active: boolean; created_at: string }; Insert: { id?: string; name: string; slug: string; description?: string | null; sort_order?: number; is_active?: boolean }; Update: { name?: string; slug?: string; description?: string | null; sort_order?: number; is_active?: boolean }; Relationships: [] };
+      products: { Row: { id: string; category_id: string; name: string; slug: string; description: string; price_ngn: number; is_demo: boolean; is_published: boolean; created_at: string; updated_at: string }; Insert: { id?: string; category_id: string; name: string; slug: string; description: string; price_ngn: number; is_demo?: boolean; is_published?: boolean }; Update: { category_id?: string; name?: string; slug?: string; description?: string; price_ngn?: number; is_demo?: boolean; is_published?: boolean }; Relationships: [] };
+      product_images: { Row: { id: string; product_id: string; image_url: string; alt_text: string; source_url: string | null; photographer: string | null; license: string | null; sort_order: number; created_at: string }; Insert: { id?: string; product_id: string; image_url: string; alt_text: string; source_url?: string | null; photographer?: string | null; license?: string | null; sort_order?: number }; Update: { image_url?: string; alt_text?: string; source_url?: string | null; photographer?: string | null; license?: string | null; sort_order?: number }; Relationships: [] };
+      product_variants: { Row: { id: string; product_id: string; size: string; color: string | null; stock_quantity: number; is_available: boolean; created_at: string }; Insert: { id?: string; product_id: string; size: string; color?: string | null; stock_quantity?: number; is_available?: boolean }; Update: { size?: string; color?: string | null; stock_quantity?: number; is_available?: boolean }; Relationships: [] };
+      order_requests: { Row: { id: string; reference: string; idempotency_key: string; customer_name: string; customer_phone: string; note: string | null; total_estimate_ngn: number; status: 'awaiting_whatsapp' | 'confirmed' | 'in_production' | 'ready_for_pickup' | 'completed' | 'cancelled'; created_at: string }; Insert: never; Update: { status?: Database['public']['Tables']['order_requests']['Row']['status']; note?: string | null }; Relationships: [] };
+      order_items: { Row: { id: string; order_request_id: string; product_id: string; variant_id: string; product_name: string; product_slug: string; size: string; color: string | null; quantity: number; unit_price_ngn: number; line_total_ngn: number; created_at: string }; Insert: never; Update: never; Relationships: [] };
+      custom_enquiries: { Row: { id: string; reference: string; customer_name: string; customer_phone: string; category_id: string | null; category_label: string; description: string; preferred_size: string | null; desired_date: string | null; inspiration_path: string | null; notes: string | null; status: 'pending' | 'contacted' | 'accepted' | 'declined'; created_at: string }; Insert: never; Update: { status?: Database['public']['Tables']['custom_enquiries']['Row']['status'] }; Relationships: [] };
+      site_settings: { Row: { id: boolean; business_name: string; tagline: string; whatsapp_number: string; location: string; pickup_instructions: string; announcement: string | null; contact_email: string | null; instagram_url: string | null; brand_settings: Json; updated_at: string }; Insert: { id?: boolean; business_name?: string; tagline?: string; whatsapp_number?: string; location?: string; pickup_instructions?: string; announcement?: string | null; contact_email?: string | null; instagram_url?: string | null; brand_settings?: Json }; Update: { business_name?: string; tagline?: string; whatsapp_number?: string; location?: string; pickup_instructions?: string; announcement?: string | null; contact_email?: string | null; instagram_url?: string | null; brand_settings?: Json }; Relationships: [] };
+    };
+    Views: Record<string, never>;
+    Functions: {
+      create_order_request: { Args: { p_customer_name: string; p_customer_phone: string; p_note: string | null; p_items: Json; p_idempotency_key: string }; Returns: Json };
+      create_custom_enquiry: { Args: { p_customer_name: string; p_customer_phone: string; p_category_label: string; p_description: string; p_preferred_size: string | null; p_desired_date: string | null; p_inspiration_path: string | null; p_notes: string | null }; Returns: Json };
+      is_admin: { Args: Record<PropertyKey, never>; Returns: boolean };
+    };
+    Enums: Record<string, never>;
+    CompositeTypes: Record<string, never>;
+  };
+};
