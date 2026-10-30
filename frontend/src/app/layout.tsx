@@ -11,7 +11,7 @@ import '@fontsource-variable/playfair-display';
 import './globals.css';
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://mariastiches.vercel.app'),
   title: { default: 'Maria Stitches | Style, beautifully stitched.', template: '%s | Maria Stitches' },
   description: 'Ready-to-wear styles and custom-made clothing from Maria Stitches in Sango Ota, Ogun State, Nigeria.',
   openGraph: {
