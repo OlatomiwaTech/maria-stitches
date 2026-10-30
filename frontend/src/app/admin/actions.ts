@@ -23,7 +23,7 @@ export async function updateEnquiryStatus(formData: FormData) {
   revalidatePath('/admin/enquiries'); revalidatePath('/admin/dashboard');
 }
 
-export async function updateBusinessSettings(formData: FormData) {
+export async function updateBusinessSettings(_previous: string, formData: FormData): Promise<string> {
   const parsed = z.object({
     businessName: z.string().trim().min(2).max(100),
     tagline: z.string().trim().min(2).max(120),
@@ -33,14 +33,20 @@ export async function updateBusinessSettings(formData: FormData) {
     announcement: z.string().trim().max(180),
     email: z.union([z.literal(''), z.email().max(254)]),
     instagram: z.union([z.literal(''), z.url().max(300)]),
+    espresso: z.string().regex(/^#[\da-f]{6}$/i),
+    ivory: z.string().regex(/^#[\da-f]{6}$/i),
+    burgundy: z.string().regex(/^#[\da-f]{6}$/i),
+    beige: z.string().regex(/^#[\da-f]{6}$/i),
+    champagne: z.string().regex(/^#[\da-f]{6}$/i),
   }).safeParse({
     businessName: formData.get('businessName'), tagline: formData.get('tagline'), whatsapp: formData.get('whatsapp'),
     location: formData.get('location'), pickup: formData.get('pickup'), announcement: formData.get('announcement'),
     email: formData.get('email'), instagram: formData.get('instagram'),
+    espresso: formData.get('espresso'), ivory: formData.get('ivory'), burgundy: formData.get('burgundy'), beige: formData.get('beige'), champagne: formData.get('champagne'),
   });
-  if (!parsed.success) return;
+  if (!parsed.success) return parsed.error.issues[0]?.message ?? 'Please check the settings and try again.';
   const { supabase } = await requireAdmin();
-  await supabase.from('site_settings').update({
+  const { error } = await supabase.from('site_settings').update({
     business_name: parsed.data.businessName,
     tagline: parsed.data.tagline,
     whatsapp_number: parsed.data.whatsapp,
@@ -49,7 +55,10 @@ export async function updateBusinessSettings(formData: FormData) {
     announcement: parsed.data.announcement || null,
     contact_email: parsed.data.email || null,
     instagram_url: parsed.data.instagram || null,
+    brand_settings: { espresso: parsed.data.espresso, ivory: parsed.data.ivory, burgundy: parsed.data.burgundy, beige: parsed.data.beige, champagne: parsed.data.champagne },
   }).eq('id', true);
+  if (error) return 'Settings could not be saved. Check the database connection and try again.';
   revalidatePath('/', 'layout');
   revalidatePath('/admin/settings');
+  return 'Business settings saved.';
 }
