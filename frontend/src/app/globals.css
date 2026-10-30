@@ -823,3 +823,12 @@ button,input,select,textarea{font:inherit}
     transform: none;
   }
 }
+
+@media (max-width: 700px) {
+  .hero h1 {
+    font-size: clamp(40px, 12.3vw, 50px);
+    line-height: .96;
+    letter-spacing: -.05em;
+    max-width: 11ch;
+  }
+}
