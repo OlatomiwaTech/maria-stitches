@@ -2,7 +2,7 @@
 
 Premium storefront and business workspace for Maria Stitches, a fashion and tailoring business in Sango Ota, Ogun State, Nigeria. Ready-to-wear is the primary offering; customers can also enquire about custom-made outfits. Customer pickup only; online payments and delivery are not part of this version.
 
-## Architecture
+## Architectural Composition
 
 - `frontend/`: Next.js App Router, React, TypeScript, Tailwind CSS 4, reusable accessible UI, server-rendered pages, route handlers, and server actions.
 - `supabase/migrations/`: PostgreSQL schema, constraints, indexes, RLS, RPCs, and Storage bucket policies.
