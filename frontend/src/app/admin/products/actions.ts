@@ -45,19 +45,34 @@ export async function createProduct(formData: FormData): Promise<ActionResult> {
 export async function updateProduct(formData: FormData): Promise<ActionResult> {
   const id = z.string().uuid().safeParse(formData.get('id'));
   const parsed = productSchema.safeParse(readProductForm(formData));
-  const image = imageUrlSchema.safeParse(formData.get('imageUrl'));
+  const imageValue = formData.get('imageUrl');
+  const image = imageValue ? imageUrlSchema.safeParse(imageValue) : null;
   const publish = formData.get('isPublished') === 'true';
-  if (!id.success || !parsed.success || !image.success) return { ok: false, message: !parsed.success ? parsed.error.issues[0]?.message ?? 'Check the product details.' : !image.success ? 'Upload a replacement product photo before marking this as genuine.' : 'Invalid product id.' };
+  if (!id.success || !parsed.success || image && !image.success) return { ok: false, message: !parsed.success ? parsed.error.issues[0]?.message ?? 'Check the product details.' : image && !image.success ? 'Upload a product photo from the product-images bucket.' : 'Invalid product id.' };
   const { supabase } = await requireAdmin();
+  const [{ data: current, error: currentError }, { data: currentVariants, error: variantsReadError }] = await Promise.all([
+    supabase.from('products').select('is_demo').eq('id', id.data).maybeSingle(),
+    supabase.from('product_variants').select('size, color').eq('product_id', id.data),
+  ]);
+  if (currentError || !current || variantsReadError) return { ok: false, message: 'The product could not be loaded. Refresh and try again.' };
+  if (current.is_demo && (!image || !image.success)) return { ok: false, message: 'Upload a confirmed Maria Stitches product photo before converting this sample into a genuine item.' };
+
+  const desiredVariants = parsed.data.sizes.flatMap((size) => parsed.data.colors.map((color) => `${size.toLowerCase()}|${color.toLowerCase()}`)).sort();
+  const existingVariants = (currentVariants ?? []).map((variant) => `${variant.size.toLowerCase()}|${(variant.color ?? '').toLowerCase()}`).sort();
+  const variantsChanged = desiredVariants.length !== existingVariants.length || desiredVariants.some((variant, index) => variant !== existingVariants[index]);
   const { error } = await supabase.from('products').update({ category_id: parsed.data.categoryId, name: parsed.data.name, slug: slugify(parsed.data.name), description: parsed.data.description, price_ngn: parsed.data.priceNgn, is_demo: false, is_published: publish }).eq('id', id.data);
   if (error) return { ok: false, message: error.code === '23505' ? 'A product with a similar slug already exists.' : 'The product could not be updated.' };
-  await supabase.from('product_variants').update({ stock_quantity: 0, is_available: false }).eq('product_id', id.data);
-  const variantResult = await supabase.from('product_variants').upsert(parsed.data.sizes.flatMap((size) => parsed.data.colors.map((color) => ({ product_id: id.data, size, color: color || null, stock_quantity: parsed.data.stockQuantity, is_available: parsed.data.stockQuantity > 0 }))), { onConflict: 'product_id,variant_key' });
-  if (variantResult.error) return { ok: false, message: 'Product details saved, but size and colour options did not update.' };
-  const { error: imageDeleteError } = await supabase.from('product_images').delete().eq('product_id', id.data);
-  if (imageDeleteError) return { ok: false, message: 'Product details saved, but the old product image could not be replaced.' };
-  const imageResult = await supabase.from('product_images').insert({ product_id: id.data, image_url: image.data, alt_text: parsed.data.imageAlt || parsed.data.name, source_url: image.data, photographer: null, license: 'Uploaded by Maria Stitches', sort_order: 0 });
-  if (imageResult.error) return { ok: false, message: 'Product details saved, but the new image did not update.' };
+  if (variantsChanged) {
+    await supabase.from('product_variants').update({ stock_quantity: 0, is_available: false }).eq('product_id', id.data);
+    const variantResult = await supabase.from('product_variants').upsert(parsed.data.sizes.flatMap((size) => parsed.data.colors.map((color) => ({ product_id: id.data, size, color: color || null, stock_quantity: parsed.data.stockQuantity, is_available: parsed.data.stockQuantity > 0 }))), { onConflict: 'product_id,variant_key' });
+    if (variantResult.error) return { ok: false, message: 'Product details saved, but size and colour options did not update.' };
+  }
+  if (image?.success) {
+    const { data: newImage, error: imageInsertError } = await supabase.from('product_images').insert({ product_id: id.data, image_url: image.data, alt_text: parsed.data.imageAlt || parsed.data.name, source_url: image.data, photographer: null, license: 'Uploaded by Maria Stitches', sort_order: 0 }).select('id').single();
+    if (imageInsertError || !newImage) return { ok: false, message: 'Product details saved, but the new image did not update.' };
+    const { error: imageDeleteError } = await supabase.from('product_images').delete().eq('product_id', id.data).neq('id', newImage.id);
+    if (imageDeleteError) return { ok: false, message: 'The new image was added, but an older image could not be removed.' };
+  }
   revalidatePath('/shop'); revalidatePath(`/shop/${slugify(parsed.data.name)}`); revalidatePath('/admin/products');
   return { ok: true, message: `Product updated${publish ? ' and published' : ''}.` };
 }
