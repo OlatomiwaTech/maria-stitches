@@ -1,31 +1,33 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowDownRight, ArrowRight, MapPin, MessageCircle } from 'lucide-react';
+import { ArrowDownRight, ArrowRight, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { DemoNotice } from '@/components/demo-notice';
+import { Reveal } from '@/components/reveal';
 import { ProductCard } from '@/components/product-card';
 import { getCatalog } from '@/lib/catalog';
 import { getSiteSettings } from '@/lib/site-settings';
-import { siteWhatsAppUrl } from '@/lib/whatsapp';
 
 export default async function HomePage() {
   const catalog = await getCatalog();
   const settings = await getSiteSettings();
-  const featured = catalog.products.slice(0, 4);
+  const featured = catalog.categories
+    .map((category) => catalog.products.find((product) => product.category.slug === category.slug))
+    .filter((product): product is (typeof catalog.products)[number] => Boolean(product))
+    .slice(0, 5);
   const categoryLinks = catalog.categories;
-  const chatLink = siteWhatsAppUrl(settings.whatsappNumber, `Hello ${settings.businessName}, I would like to ask about ready-to-wear styles.`);
 
   return <main>
     <section className="hero">
       <div className="hero-copy">
         <span className="eyebrow">A NIGERIAN TAILORING STUDIO</span>
-        <h1>Style,<br /><em>beautifully</em><br />stitched.</h1>
-        <p>Ready-to-wear pieces and custom-made looks, thoughtfully brought together in {settings.location.split(',')[0]}.</p>
-        <div className="hero-actions"><Button asChild size="lg"><Link href="/shop">Explore ready-to-wear <ArrowRight size={16} /></Link></Button>{chatLink && <Button asChild size="lg" variant="whatsapp"><a href={chatLink} target="_blank" rel="noreferrer"><MessageCircle size={16} /> Chat on WhatsApp</a></Button>}</div>
+        <h1>Made for<br /><em>your moments.</em><br />Designed around you.</h1>
+        <p>Discover thoughtfully styled ready-to-wear pieces and custom-made outfits from Maria Stitches.</p>
+        <div className="hero-actions"><Button asChild size="lg"><Link href="/shop">Explore ready-to-wear <ArrowRight size={16} /></Link></Button><Button asChild size="lg" variant="outline"><Link href="/custom-order">Explore custom-made</Link></Button></div>
         <div className="hero-note"><MapPin size={15} /><span>{settings.location}<br /><strong>Customer pickup only</strong></span></div>
       </div>
       <div className="hero-image-frame">
-        <Image className="hero-image" src="https://images.unsplash.com/photo-1539109136881-3be0616acf4b?auto=format&fit=crop&w=1400&q=86" alt="Illustrative editorial fashion photograph. Not a Maria Stitches product image." fill priority sizes="(max-width: 700px) 90vw, 55vw" />
+        <Image className="hero-image" src="https://images.unsplash.com/photo-1687052093309-7a14efa58ecb?auto=format&fit=crop&w=1400&q=86" alt="Illustrative African fashion portrait by Ibrahima Toure; not a Maria Stitches garment." fill priority sizes="(max-width: 700px) 90vw, 55vw" />
         <span className="hero-index">MARIA STITCHES · 01</span><span className="hero-image-label">An idea becomes your own.</span>
       </div>
       <div className="hero-bottom"><span>READY-TO-WEAR · CUSTOM-MADE</span><span>SCROLL TO EXPLORE <ArrowDownRight size={13} /></span></div>
@@ -35,13 +37,19 @@ export default async function HomePage() {
 
     <section className="section" aria-labelledby="categories-title">
       <div className="section-head"><div><span className="eyebrow">BROWSE BY CATEGORY</span><h2 className="section-title" id="categories-title">Find your <em>look.</em></h2></div><p className="section-description">Explore sample styles across the categories Maria Stitches makes. Availability and final details are confirmed directly.</p></div>
-      <div className="category-grid">{categoryLinks.map((category, index) => <Link className="category-card" href={`/shop?category=${category.slug}`} key={category.slug}><span className="category-number">0{index + 1} / CATEGORY</span><h3>{category.name}</h3></Link>)}</div>
+      <div className="category-grid">{categoryLinks.map((category, index) => {
+        const image = catalog.products.find((product) => product.category.slug === category.slug)?.images[0];
+        return <Reveal key={category.slug} delay={index * 60}><Link className={image ? 'category-card has-image' : 'category-card'} href={`/shop?category=${category.slug}`}>
+          {image && <Image className="category-image" src={image.url} alt={`Illustrative sample fashion image for ${category.name}; not a confirmed Maria Stitches design.`} fill sizes="(max-width: 700px) 45vw, 20vw" />}
+          <span className="category-number">0{index + 1} / CATEGORY</span><h3>{category.name}</h3>
+        </Link></Reveal>;
+      })}</div>
     </section>
 
     <section className="section section-featured" aria-labelledby="featured-title">
       <div className="section-head"><div><span className="eyebrow">THE SAMPLE EDIT</span><h2 className="section-title" id="featured-title">A few styles to <em>start.</em></h2></div><Button asChild variant="outline"><Link href="/shop">View all styles <ArrowRight size={15} /></Link></Button></div>
       {catalog.demoMode && <DemoNotice />}
-      {featured.length ? <div className="product-grid">{featured.map((product) => <ProductCard product={product} whatsappNumber={settings.whatsappNumber} key={product.id} />)}</div> : <div className="empty-state">The shop is being prepared. Message Maria Stitches to ask about current styles.</div>}
+      {featured.length ? <div className="product-grid">{featured.map((product, index) => <Reveal key={product.id} delay={index * 70}><ProductCard product={product} whatsappNumber={settings.whatsappNumber} /></Reveal>)}</div> : <div className="empty-state">The shop is being prepared. Message Maria Stitches to ask about current styles.</div>}
     </section>
 
     <section className="feature-split">

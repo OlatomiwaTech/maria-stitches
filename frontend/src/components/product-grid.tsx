@@ -4,9 +4,9 @@ import { useMemo, useState } from 'react';
 import { ProductCard } from '@/components/product-card';
 import type { Category, Product } from '@/lib/types';
 
-export function ProductGrid({ products, categories, whatsappNumber }: { products: Product[]; categories: Category[]; whatsappNumber: string }) {
+export function ProductGrid({ products, categories, whatsappNumber, initialCategory = 'all' }: { products: Product[]; categories: Category[]; whatsappNumber: string; initialCategory?: string }) {
   const [query, setQuery] = useState('');
-  const [category, setCategory] = useState('all');
+  const [category, setCategory] = useState(initialCategory);
   const [sort, setSort] = useState('featured');
   const [minPrice, setMinPrice] = useState('');
   const [maxPrice, setMaxPrice] = useState('');
