@@ -47,5 +47,6 @@ export type CartLine = {
   color: string | null;
   unitPriceNgn: number;
   quantity: number;
+  maxQuantity?: number;
   isDemo: boolean;
 };

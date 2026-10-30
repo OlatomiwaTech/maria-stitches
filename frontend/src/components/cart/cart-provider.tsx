@@ -45,7 +45,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     if (!variant?.available || !Number.isInteger(quantity) || quantity < 1 || quantity > quantityLimit) return false;
     setLines((previous) => {
       const existing = previous.find((line) => line.variantId === variantId);
-      if (existing) return previous.map((line) => line.variantId === variantId ? { ...line, quantity: Math.min(quantityLimit, line.quantity + quantity) } : line);
+      if (existing) return previous.map((line) => line.variantId === variantId ? { ...line, maxQuantity: quantityLimit, quantity: Math.min(quantityLimit, line.quantity + quantity) } : line);
       return [...previous, {
         productId: product.id,
         variantId,
@@ -56,6 +56,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         color: variant.color,
         unitPriceNgn: product.priceNgn,
         quantity,
+        maxQuantity: quantityLimit,
         isDemo: product.isDemo,
       }];
     });
@@ -64,7 +65,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const setQuantity = useCallback((variantId: string, quantity: number) => {
     if (!Number.isInteger(quantity) || quantity < 1) return;
-    setLines((previous) => previous.map((line) => line.variantId === variantId ? { ...line, quantity: Math.min(10, quantity) } : line));
+    setLines((previous) => previous.map((line) => line.variantId === variantId ? { ...line, quantity: Math.min(line.maxQuantity ?? 10, quantity) } : line));
   }, []);
   const remove = useCallback((variantId: string) => setLines((previous) => previous.filter((line) => line.variantId !== variantId)), []);
   const clear = useCallback(() => setLines([]), []);
@@ -95,5 +96,6 @@ function isCartLine(value: unknown): value is CartLine {
     && typeof line.unitPriceNgn === 'number' && Number.isFinite(line.unitPriceNgn)
     && line.unitPriceNgn >= 0
     && typeof line.quantity === 'number' && Number.isInteger(line.quantity) && line.quantity >= 1 && line.quantity <= 10
+    && (line.maxQuantity === undefined || typeof line.maxQuantity === 'number' && Number.isInteger(line.maxQuantity) && line.maxQuantity >= 1 && line.maxQuantity <= 10)
     && typeof line.isDemo === 'boolean';
 }
