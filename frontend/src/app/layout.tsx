@@ -6,6 +6,8 @@ import { WhatsAppFloat } from '@/components/whatsapp-float';
 import { SiteSettingsProvider } from '@/components/site-settings-provider';
 import { getSiteSettings } from '@/lib/site-settings';
 import type { CSSProperties } from 'react';
+import '@fontsource-variable/dm-sans';
+import '@fontsource-variable/playfair-display';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -30,6 +32,11 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
     '--burgundy': settings.colors.burgundy,
     '--beige': settings.colors.beige,
     '--champagne': settings.colors.champagne,
+    '--color-espresso': settings.colors.espresso,
+    '--color-ivory': settings.colors.ivory,
+    '--color-burgundy': settings.colors.burgundy,
+    '--color-beige': settings.colors.beige,
+    '--color-champagne': settings.colors.champagne,
   } as CSSProperties;
   return <html lang="en-NG" data-scroll-behavior="smooth"><body style={colors}><CartProviderShell><SiteSettingsProvider settings={settings}><SiteHeader />{children}<SiteFooter settings={settings} /><WhatsAppFloat settings={settings} /></SiteSettingsProvider></CartProviderShell></body></html>;
 }
