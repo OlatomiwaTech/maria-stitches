@@ -19,7 +19,6 @@ export const metadata: Metadata = {
     siteName: 'Maria Stitches',
     title: 'Maria Stitches | Style, beautifully stitched.',
     description: 'Browse ready-to-wear styles and enquire about custom-made clothing in Sango Ota, Ogun State.',
-    images: ['/og-maria-stitches.jpg'],
   },
   robots: { index: true, follow: true },
 };

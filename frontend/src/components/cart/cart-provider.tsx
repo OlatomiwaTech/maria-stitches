@@ -85,7 +85,10 @@ function isCartLine(value: unknown): value is CartLine {
   const line = value as Partial<CartLine>;
   return typeof line.productId === 'string' && typeof line.variantId === 'string'
     && typeof line.slug === 'string' && typeof line.name === 'string'
+    && typeof line.image === 'string' && typeof line.size === 'string'
+    && (line.color === null || typeof line.color === 'string')
     && typeof line.unitPriceNgn === 'number' && Number.isFinite(line.unitPriceNgn)
+    && line.unitPriceNgn >= 0
     && typeof line.quantity === 'number' && Number.isInteger(line.quantity) && line.quantity >= 1 && line.quantity <= 10
     && typeof line.isDemo === 'boolean';
 }
