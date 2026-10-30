@@ -1,13 +1,13 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { defaultSiteSettings } from '@/lib/site-settings';
-import { siteWhatsAppUrl } from '@/lib/whatsapp';
+import { normalizePhoneNumber, siteWhatsAppUrl } from '@/lib/whatsapp';
 import { hasSupabaseConfig, createSupabaseServerClient } from '@/lib/supabase/server';
 import type { Json } from '@/lib/database.types';
 
 const requestSchema = z.object({
   name: z.string().trim().min(2).max(100),
-  phone: z.string().trim().min(7).max(24).regex(/^[+\d\s().-]+$/),
+  phone: z.string().trim().min(7).max(24).regex(/^[+\d\s().-]+$/).transform(normalizePhoneNumber).pipe(z.string().regex(/^[1-9]\d{7,14}$/)),
   note: z.string().trim().max(1000).optional().default(''),
   idempotencyKey: z.string().uuid(),
   items: z.array(z.object({ variantId: z.string().uuid(), quantity: z.number().int().min(1).max(10) })).min(1).max(30),

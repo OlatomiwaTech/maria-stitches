@@ -2,13 +2,16 @@ import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { createSupabaseServerClient, hasSupabaseConfig } from '@/lib/supabase/server';
+import { normalizePhoneNumber } from '@/lib/whatsapp';
 import type { Database } from '@/lib/database.types';
 
 export const runtime = 'nodejs';
 const imageTypes = new Set(['image/jpeg', 'image/png', 'image/webp']);
+const maxRequestBytes = 4.25 * 1024 * 1024;
+const maxPhotoBytes = 4 * 1024 * 1024;
 const formSchema = z.object({
   name: z.string().trim().min(2).max(100),
-  phone: z.string().trim().min(7).max(24).regex(/^[+\d\s().-]+$/),
+  phone: z.string().trim().min(7).max(24).regex(/^[+\d\s().-]+$/).transform(normalizePhoneNumber).pipe(z.string().regex(/^[1-9]\d{7,14}$/)),
   category: z.string().trim().min(2).max(100),
   description: z.string().trim().min(10).max(2000),
   size: z.string().trim().max(40).optional().default(''),
@@ -18,14 +21,14 @@ const formSchema = z.object({
 
 export async function POST(request: Request) {
   const length = Number(request.headers.get('content-length') ?? 0);
-  if (length > 6 * 1024 * 1024) return NextResponse.json({ message: 'Please keep the entire request under 6 MB.' }, { status: 413 });
+  if (length > maxRequestBytes) return NextResponse.json({ message: 'Please keep the entire request under 4 MB.' }, { status: 413 });
   const form = await request.formData().catch(() => null);
   if (!form) return NextResponse.json({ message: 'The enquiry form could not be read.' }, { status: 400 });
   const parsed = formSchema.safeParse({ name: form.get('name'), phone: form.get('phone'), category: form.get('category'), description: form.get('description'), size: form.get('size'), desiredDate: form.get('desiredDate'), notes: form.get('notes') });
   if (!parsed.success) return NextResponse.json({ message: 'Please check the required fields and try again.' }, { status: 400 });
   const photoEntry = form.get('inspiration');
   const photo = photoEntry instanceof File && photoEntry.size > 0 ? photoEntry : null;
-  if (photo && (!imageTypes.has(photo.type) || photo.size > 5 * 1024 * 1024)) return NextResponse.json({ message: 'Please use a JPG, PNG or WebP image under 5 MB.' }, { status: 400 });
+  if (photo && (!imageTypes.has(photo.type) || photo.size > maxPhotoBytes || await detectImageType(photo) !== photo.type)) return NextResponse.json({ message: 'Please use a genuine JPG, PNG or WebP image under 4 MB.' }, { status: 400 });
   if (!hasSupabaseConfig()) return NextResponse.json({ message: 'Online enquiry saving is not configured yet.' }, { status: 503 });
 
   const supabase = await createSupabaseServerClient();
@@ -61,4 +64,12 @@ export async function POST(request: Request) {
   } else if (photo) photoWarning = 'Your enquiry is saved, but image storage is not configured. Please share the image in WhatsApp.';
 
   return NextResponse.json({ reference: record.reference, photoSaved, photoWarning }, { status: 201 });
+}
+
+async function detectImageType(file: File): Promise<string | null> {
+  const bytes = new Uint8Array(await file.slice(0, 12).arrayBuffer());
+  if (bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff) return 'image/jpeg';
+  if (bytes.length >= 8 && bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4e && bytes[3] === 0x47 && bytes[4] === 0x0d && bytes[5] === 0x0a && bytes[6] === 0x1a && bytes[7] === 0x0a) return 'image/png';
+  if (bytes.length >= 12 && String.fromCharCode(...bytes.slice(0, 4)) === 'RIFF' && String.fromCharCode(...bytes.slice(8, 12)) === 'WEBP') return 'image/webp';
+  return null;
 }
