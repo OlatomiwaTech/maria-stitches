@@ -56,7 +56,6 @@ create table if not exists public.product_variants (
   unique (product_id, size, color)
 );
 
-create sequence if not exists public.order_reference_seq start 1;
 create table if not exists public.order_requests (
   id uuid primary key default gen_random_uuid(),
   reference text not null unique default ('MS-' || lpad(nextval('public.order_reference_seq')::text, 6, '0')),
@@ -85,7 +84,6 @@ create table if not exists public.order_items (
   created_at timestamptz not null default now()
 );
 
-create sequence if not exists public.custom_reference_seq start 1;
 create table if not exists public.custom_enquiries (
   id uuid primary key default gen_random_uuid(),
   reference text not null unique default ('MC-' || lpad(nextval('public.custom_reference_seq')::text, 6, '0')),
@@ -206,7 +204,7 @@ create or replace function public.create_order_request(
   p_items jsonb,
   p_idempotency_key uuid
 )
-returns jsonb language plpgsql security definer set search_path = public, pg_temp as $$
+returns jsonb language plpgsql security definer set search_path = '' as $$
 declare
   v_order public.order_requests%rowtype;
   v_item jsonb;
@@ -270,7 +268,7 @@ create or replace function public.create_custom_enquiry(
   p_inspiration_path text,
   p_notes text
 )
-returns jsonb language plpgsql security definer set search_path = public, pg_temp as $$
+returns jsonb language plpgsql security definer set search_path = '' as $$
 declare v_enquiry public.custom_enquiries%rowtype;
 begin
   if p_customer_name is null or char_length(btrim(p_customer_name)) not between 2 and 100 then raise exception 'INVALID_CUSTOMER_NAME'; end if;
@@ -278,6 +276,7 @@ begin
   if p_category_label is null or char_length(btrim(p_category_label)) not between 2 and 100 then raise exception 'INVALID_CATEGORY'; end if;
   if p_description is null or char_length(btrim(p_description)) not between 10 and 2000 then raise exception 'INVALID_DESCRIPTION'; end if;
   if p_inspiration_path is not null and p_inspiration_path !~ '^pending/[0-9a-fA-F-]{36}\.(jpg|jpeg|png|webp)$' then raise exception 'INVALID_INSPIRATION_PATH'; end if;
+  if p_inspiration_path is not null and not exists (select 1 from storage.objects o where o.bucket_id = 'custom-inspiration' and o.name = p_inspiration_path) then raise exception 'INSPIRATION_NOT_FOUND'; end if;
   insert into public.custom_enquiries (customer_name, customer_phone, category_label, description, preferred_size, desired_date, inspiration_path, notes)
     values (btrim(p_customer_name), btrim(p_customer_phone), btrim(p_category_label), btrim(p_description), nullif(btrim(p_preferred_size), ''), p_desired_date, p_inspiration_path, nullif(btrim(p_notes), ''))
     returning * into v_enquiry;
@@ -296,9 +295,9 @@ values ('product-images', 'product-images', true, 8388608, array['image/jpeg','i
 on conflict (id) do update set public = excluded.public, file_size_limit = excluded.file_size_limit, allowed_mime_types = excluded.allowed_mime_types;
 
 create policy product_images_admin_upload on storage.objects for insert to authenticated with check (bucket_id = 'product-images' and (select public.is_admin()));
+create policy product_images_admin_read on storage.objects for select to authenticated using (bucket_id = 'product-images' and (select public.is_admin()));
 create policy product_images_admin_update on storage.objects for update to authenticated using (bucket_id = 'product-images' and (select public.is_admin())) with check (bucket_id = 'product-images' and (select public.is_admin()));
 create policy product_images_admin_delete on storage.objects for delete to authenticated using (bucket_id = 'product-images' and (select public.is_admin()));
 create policy custom_inspiration_public_upload on storage.objects for insert to anon with check (bucket_id = 'custom-inspiration' and name ~ '^pending/[0-9a-fA-F-]{36}\.(jpg|jpeg|png|webp)$');
 create policy custom_inspiration_admin_read on storage.objects for select to authenticated using (bucket_id = 'custom-inspiration' and (select public.is_admin()));
 
-grant usage, select on sequence public.order_reference_seq, public.custom_reference_seq to anon, authenticated;
