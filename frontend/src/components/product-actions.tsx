@@ -4,17 +4,17 @@ import { useMemo, useState } from 'react';
 import { Check, MessageCircle, Plus, ShoppingBag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useCart } from '@/components/cart/cart-provider';
-import { brand, whatsappUrl } from '@/lib/brand';
+import { siteWhatsAppUrl } from '@/lib/site-settings';
 import type { Product } from '@/lib/types';
 
-export function ProductActions({ product }: { product: Product }) {
+export function ProductActions({ product, whatsappNumber }: { product: Product; whatsappNumber: string }) {
   const firstAvailable = product.variants.find((variant) => variant.available);
   const [variantId, setVariantId] = useState(firstAvailable?.id ?? '');
   const [quantity, setQuantity] = useState(1);
   const [added, setAdded] = useState(false);
   const { add } = useCart();
   const selected = useMemo(() => product.variants.find((variant) => variant.id === variantId), [product.variants, variantId]);
-  const enquiry = whatsappUrl(`Hello ${brand.name}, I’m interested in ${product.name}${selected ? ` in size ${selected.size}` : ''}. Is it currently available?`);
+  const enquiry = siteWhatsAppUrl(whatsappNumber, `Hello Maria Stitches, I’m interested in ${product.name}${selected ? ` in size ${selected.size}` : ''}. Is it currently available?`);
 
   function addProduct() {
     if (!selected) return;
