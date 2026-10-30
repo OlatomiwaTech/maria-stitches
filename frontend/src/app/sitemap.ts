@@ -1,10 +1,20 @@
 import type { MetadataRoute } from 'next';
+import { getCatalog } from '@/lib/catalog';
 
-export default function sitemap(): MetadataRoute.Sitemap {
-  const base = (process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000').replace(/\/$/, '');
-  return ['', '/shop', '/custom-order', '/about', '/contact', '/faq', '/privacy'].map((path) => ({
+export const dynamic = 'force-dynamic';
+
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const base = (process.env.NEXT_PUBLIC_SITE_URL || 'https://mariastiches.vercel.app').replace(/\/$/, '');
+  const staticPages = ['', '/shop', '/custom-order', '/about', '/contact', '/faq', '/privacy'].map((path) => ({
     url: `${base}${path}`,
     changeFrequency: path === '/shop' ? 'daily' : 'monthly',
     priority: path === '' ? 1 : path === '/shop' ? 0.9 : 0.6,
   }));
+  const { products } = await getCatalog();
+  const productPages = products.filter((product) => product.published).map((product) => ({
+    url: `${base}/shop/${product.slug}`,
+    changeFrequency: 'weekly' as const,
+    priority: 0.7,
+  }));
+  return [...staticPages, ...productPages];
 }
