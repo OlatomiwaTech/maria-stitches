@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
-import { brand, whatsappUrl } from '@/lib/brand';
+import { defaultSiteSettings, siteWhatsAppUrl } from '@/lib/site-settings';
 import { hasSupabaseConfig, createSupabaseServerClient } from '@/lib/supabase/server';
 import type { Json } from '@/lib/database.types';
 
@@ -42,8 +42,11 @@ export async function POST(request: Request) {
     if (typeof row.name !== 'string' || typeof row.quantity !== 'number' || typeof row.size !== 'string' || typeof row.unit_price_ngn !== 'number') return '';
     return `${index + 1}. ${row.name}\n   Size: ${row.size}${typeof row.color === 'string' ? ` · Colour: ${row.color}` : ''}\n   Quantity: ${row.quantity}\n   Price: ${formatNaira(row.unit_price_ngn)} each`;
   }).filter(Boolean).join('\n\n');
-  const message = `Hello ${brand.name}!\n\nI would like to enquire about placing an order.\n\nOrder Reference: ${result.reference}\n\nItems:\n${itemLines}\n\nEstimated Total: ${formatNaira(result.total_estimate_ngn)}\n\nCustomer Name: ${parsed.data.name}\nPhone: ${parsed.data.phone}\n\nFulfilment: Customer Pickup\nLocation: ${brand.location}.\n\nPlease confirm availability and the next steps.\n\nThank you!`;
-  const link = whatsappUrl(message);
+  const { data: settings } = await supabase.from('site_settings').select('business_name, whatsapp_number, location').eq('id', true).maybeSingle();
+  const businessName = settings?.business_name || defaultSiteSettings.businessName;
+  const businessLocation = settings?.location || defaultSiteSettings.location;
+  const message = `Hello ${businessName}!\n\nI would like to enquire about placing an order.\n\nOrder Reference: ${result.reference}\n\nItems:\n${itemLines}\n\nEstimated Total: ${formatNaira(result.total_estimate_ngn)}\n\nCustomer Name: ${parsed.data.name}\nPhone: ${parsed.data.phone}\n\nFulfilment: Customer Pickup\nLocation: ${businessLocation}.\n\nPlease confirm availability and the next steps.\n\nThank you!`;
+  const link = siteWhatsAppUrl(settings?.whatsapp_number || defaultSiteSettings.whatsappNumber, message);
   if (!link) return NextResponse.json({ message: 'The WhatsApp number is not configured.' }, { status: 503 });
   return NextResponse.json({ reference: result.reference, totalEstimateNgn: result.total_estimate_ngn, whatsappUrl: link }, { status: 201 });
 }
