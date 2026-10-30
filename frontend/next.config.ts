@@ -1,9 +1,8 @@
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
-  // TypeScript is checked by the dedicated `npm run typecheck` script. This
-  // avoids Next's bundled --showConfig parser incompatibility in this setup.
-  typescript: { ignoreBuildErrors: true },
+  // Use the compiler API in-process; the managed runner blocks child CLI stdout.
+  experimental: { useTypeScriptCli: false },
   images: {
     remotePatterns: [
       { protocol: 'https', hostname: 'images.unsplash.com' },
