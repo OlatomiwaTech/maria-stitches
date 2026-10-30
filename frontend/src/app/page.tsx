@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button';
 import { DemoNotice } from '@/components/demo-notice';
 import { ProductCard } from '@/components/product-card';
 import { getCatalog } from '@/lib/catalog';
-import { demoCategories } from '@/lib/demo-products';
 import { getSiteSettings } from '@/lib/site-settings';
 import { siteWhatsAppUrl } from '@/lib/whatsapp';
 
@@ -13,7 +12,7 @@ export default async function HomePage() {
   const catalog = await getCatalog();
   const settings = await getSiteSettings();
   const featured = catalog.products.slice(0, 4);
-  const categoryLinks = demoCategories;
+  const categoryLinks = catalog.categories;
   const chatLink = siteWhatsAppUrl(settings.whatsappNumber, `Hello ${settings.businessName}, I would like to ask about ready-to-wear styles.`);
 
   return <main>
