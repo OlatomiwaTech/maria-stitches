@@ -21,7 +21,7 @@ const formSchema = z.object({
 
 export async function POST(request: Request) {
   const length = Number(request.headers.get('content-length') ?? 0);
-  if (length > maxRequestBytes) return NextResponse.json({ message: 'Please keep the entire request under 4 MB.' }, { status: 413 });
+  if (length > maxRequestBytes) return NextResponse.json({ message: 'Please keep the entire request under 4.5 MB.' }, { status: 413 });
   const form = await request.formData().catch(() => null);
   if (!form) return NextResponse.json({ message: 'The enquiry form could not be read.' }, { status: 400 });
   const parsed = formSchema.safeParse({ name: form.get('name'), phone: form.get('phone'), category: form.get('category'), description: form.get('description'), size: form.get('size'), desiredDate: form.get('desiredDate'), notes: form.get('notes') });

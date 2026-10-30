@@ -10,7 +10,7 @@ import { getCatalog } from '@/lib/catalog';
 import { getSiteSettings } from '@/lib/site-settings';
 
 export const metadata: Metadata = {
-  title: 'Maria Stitches | Style, beautifully stitched.',
+  title: { absolute: 'Maria Stitches | Style, beautifully stitched.' },
   description: 'Discover ready-to-wear sample styles and enquire about custom-made clothing from Maria Stitches in Sango Ota, Ogun State.',
   alternates: { canonical: '/' },
 };
