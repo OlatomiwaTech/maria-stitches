@@ -27,7 +27,11 @@ export async function POST(request: Request) {
     p_idempotency_key: parsed.data.idempotencyKey,
   });
 
-  if (error) return NextResponse.json({ message: error.message.includes('DEMO_PRODUCT') ? 'Sample products cannot be submitted as real orders.' : 'The selected styles could not be requested. Please contact Maria Stitches.' }, { status: error.message.includes('DEMO_PRODUCT') ? 409 : 400 });
+  if (error) {
+    const limited = error.message.includes('RATE_LIMITED');
+    const demo = error.message.includes('DEMO_PRODUCT');
+    return NextResponse.json({ message: limited ? 'Too many requests have been sent from this phone number. Please try again later.' : demo ? 'Sample products cannot be submitted as real orders.' : 'The selected styles could not be requested. Please contact Maria Stitches.' }, { status: limited ? 429 : demo ? 409 : 400 });
+  }
   if (!data || typeof data !== 'object' || Array.isArray(data)) return NextResponse.json({ message: 'The order request response was incomplete.' }, { status: 502 });
 
   const result = data as { reference?: unknown; total_estimate_ngn?: unknown; items?: unknown };

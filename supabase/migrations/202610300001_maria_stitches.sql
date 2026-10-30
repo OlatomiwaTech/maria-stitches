@@ -1,3 +1,4 @@
+create schema if not exists extensions;
 create extension if not exists pgcrypto with schema extensions;
 
 create sequence if not exists public.order_reference_seq start 1;
@@ -53,7 +54,8 @@ create table if not exists public.product_variants (
   stock_quantity integer not null default 0 check (stock_quantity >= 0),
   is_available boolean not null default true,
   created_at timestamptz not null default now(),
-  unique (product_id, size, color)
+  variant_key text generated always as (lower(size) || '|' || lower(coalesce(color, ''))) stored not null,
+  unique (product_id, variant_key)
 );
 
 create table if not exists public.order_requests (
@@ -115,6 +117,14 @@ create table if not exists public.site_settings (
   updated_at timestamptz not null default now()
 );
 
+create table if not exists public.public_submission_limits (
+  form_kind text not null check (form_kind in ('order','custom')),
+  subject_hash text not null,
+  window_started_at timestamptz not null default now(),
+  request_count integer not null default 0,
+  primary key (form_kind, subject_hash)
+);
+
 create index if not exists products_category_published_idx on public.products(category_id, is_published, created_at desc);
 create index if not exists variants_product_available_idx on public.product_variants(product_id, is_available, stock_quantity);
 create index if not exists order_requests_status_created_idx on public.order_requests(status, created_at desc);
@@ -152,10 +162,11 @@ alter table public.order_requests enable row level security;
 alter table public.order_items enable row level security;
 alter table public.custom_enquiries enable row level security;
 alter table public.site_settings enable row level security;
+alter table public.public_submission_limits enable row level security;
 
 revoke all on public.profiles, public.categories, public.products, public.product_images,
   public.product_variants, public.order_requests, public.order_items, public.custom_enquiries,
-  public.site_settings from anon, authenticated;
+  public.site_settings, public.public_submission_limits from anon, authenticated;
 
 grant select on public.categories, public.products, public.product_images, public.product_variants, public.site_settings to anon, authenticated;
 grant select on public.profiles, public.order_requests, public.order_items, public.custom_enquiries to authenticated;
@@ -213,6 +224,7 @@ declare
   v_quantity integer;
   v_total bigint := 0;
   v_items jsonb := '[]'::jsonb;
+  v_request_count integer;
 begin
   if p_customer_name is null or char_length(btrim(p_customer_name)) not between 2 and 100 then raise exception 'INVALID_CUSTOMER_NAME'; end if;
   if p_customer_phone is null or char_length(btrim(p_customer_phone)) not between 7 and 24 then raise exception 'INVALID_CUSTOMER_PHONE'; end if;
@@ -226,6 +238,14 @@ begin
       into v_items from public.order_items oi where oi.order_request_id = v_order.id;
     return jsonb_build_object('reference', v_order.reference, 'total_estimate_ngn', v_order.total_estimate_ngn, 'items', v_items, 'status', v_order.status);
   end if;
+
+  insert into public.public_submission_limits (form_kind, subject_hash, window_started_at, request_count)
+    values ('order', encode(extensions.digest(lower(btrim(p_customer_phone)), 'sha256'), 'hex'), now(), 1)
+    on conflict (form_kind, subject_hash) do update set
+      window_started_at = case when public.public_submission_limits.window_started_at < now() - interval '1 hour' then now() else public.public_submission_limits.window_started_at end,
+      request_count = case when public.public_submission_limits.window_started_at < now() - interval '1 hour' then 1 else public.public_submission_limits.request_count + 1 end
+    returning request_count into v_request_count;
+  if v_request_count > 5 then raise exception 'RATE_LIMITED'; end if;
 
   insert into public.order_requests (idempotency_key, customer_name, customer_phone, note)
     values (p_idempotency_key, btrim(p_customer_name), btrim(p_customer_phone), nullif(btrim(p_note), ''))
@@ -269,7 +289,9 @@ create or replace function public.create_custom_enquiry(
   p_notes text
 )
 returns jsonb language plpgsql security definer set search_path = '' as $$
-declare v_enquiry public.custom_enquiries%rowtype;
+declare
+  v_enquiry public.custom_enquiries%rowtype;
+  v_request_count integer;
 begin
   if p_customer_name is null or char_length(btrim(p_customer_name)) not between 2 and 100 then raise exception 'INVALID_CUSTOMER_NAME'; end if;
   if p_customer_phone is null or char_length(btrim(p_customer_phone)) not between 7 and 24 then raise exception 'INVALID_CUSTOMER_PHONE'; end if;
@@ -277,6 +299,13 @@ begin
   if p_description is null or char_length(btrim(p_description)) not between 10 and 2000 then raise exception 'INVALID_DESCRIPTION'; end if;
   if p_inspiration_path is not null and p_inspiration_path !~ '^pending/[0-9a-fA-F-]{36}\.(jpg|jpeg|png|webp)$' then raise exception 'INVALID_INSPIRATION_PATH'; end if;
   if p_inspiration_path is not null and not exists (select 1 from storage.objects o where o.bucket_id = 'custom-inspiration' and o.name = p_inspiration_path) then raise exception 'INSPIRATION_NOT_FOUND'; end if;
+  insert into public.public_submission_limits (form_kind, subject_hash, window_started_at, request_count)
+    values ('custom', encode(extensions.digest(lower(btrim(p_customer_phone)), 'sha256'), 'hex'), now(), 1)
+    on conflict (form_kind, subject_hash) do update set
+      window_started_at = case when public.public_submission_limits.window_started_at < now() - interval '1 hour' then now() else public.public_submission_limits.window_started_at end,
+      request_count = case when public.public_submission_limits.window_started_at < now() - interval '1 hour' then 1 else public.public_submission_limits.request_count + 1 end
+    returning request_count into v_request_count;
+  if v_request_count > 5 then raise exception 'RATE_LIMITED'; end if;
   insert into public.custom_enquiries (customer_name, customer_phone, category_label, description, preferred_size, desired_date, inspiration_path, notes)
     values (btrim(p_customer_name), btrim(p_customer_phone), btrim(p_category_label), btrim(p_description), nullif(btrim(p_preferred_size), ''), p_desired_date, p_inspiration_path, nullif(btrim(p_notes), ''))
     returning * into v_enquiry;
@@ -300,4 +329,5 @@ create policy product_images_admin_update on storage.objects for update to authe
 create policy product_images_admin_delete on storage.objects for delete to authenticated using (bucket_id = 'product-images' and (select public.is_admin()));
 create policy custom_inspiration_public_upload on storage.objects for insert to anon with check (bucket_id = 'custom-inspiration' and name ~ '^pending/[0-9a-fA-F-]{36}\.(jpg|jpeg|png|webp)$');
 create policy custom_inspiration_admin_read on storage.objects for select to authenticated using (bucket_id = 'custom-inspiration' and (select public.is_admin()));
+drop policy if exists custom_inspiration_public_upload on storage.objects;
 

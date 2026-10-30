@@ -51,10 +51,12 @@ export async function updateProduct(formData: FormData): Promise<ActionResult> {
   const { supabase } = await requireAdmin();
   const { error } = await supabase.from('products').update({ category_id: parsed.data.categoryId, name: parsed.data.name, slug: slugify(parsed.data.name), description: parsed.data.description, price_ngn: parsed.data.priceNgn, is_demo: false, is_published: publish }).eq('id', id.data);
   if (error) return { ok: false, message: error.code === '23505' ? 'A product with a similar slug already exists.' : 'The product could not be updated.' };
-  const { data: existingImage } = await supabase.from('product_images').select('id').eq('product_id', id.data).order('sort_order').limit(1).maybeSingle();
-  const imageResult = existingImage
-    ? await supabase.from('product_images').update({ image_url: image.data, alt_text: parsed.data.imageAlt || parsed.data.name, source_url: image.data, photographer: null, license: 'Uploaded by Maria Stitches' }).eq('id', existingImage.id)
-    : await supabase.from('product_images').insert({ product_id: id.data, image_url: image.data, alt_text: parsed.data.imageAlt || parsed.data.name, source_url: image.data, photographer: null, license: 'Uploaded by Maria Stitches', sort_order: 0 });
+  await supabase.from('product_variants').update({ stock_quantity: 0, is_available: false }).eq('product_id', id.data);
+  const variantResult = await supabase.from('product_variants').upsert(parsed.data.sizes.flatMap((size) => parsed.data.colors.map((color) => ({ product_id: id.data, size, color: color || null, stock_quantity: parsed.data.stockQuantity, is_available: parsed.data.stockQuantity > 0 }))), { onConflict: 'product_id,variant_key' });
+  if (variantResult.error) return { ok: false, message: 'Product details saved, but size and colour options did not update.' };
+  const { error: imageDeleteError } = await supabase.from('product_images').delete().eq('product_id', id.data);
+  if (imageDeleteError) return { ok: false, message: 'Product details saved, but the old product image could not be replaced.' };
+  const imageResult = await supabase.from('product_images').insert({ product_id: id.data, image_url: image.data, alt_text: parsed.data.imageAlt || parsed.data.name, source_url: image.data, photographer: null, license: 'Uploaded by Maria Stitches', sort_order: 0 });
   if (imageResult.error) return { ok: false, message: 'Product details saved, but the new image did not update.' };
   revalidatePath('/shop'); revalidatePath(`/shop/${slugify(parsed.data.name)}`); revalidatePath('/admin/products');
   return { ok: true, message: `Product updated${publish ? ' and published' : ''}.` };
@@ -89,7 +91,8 @@ const productSchema = z.object({
   colors: z.array(z.string().trim().max(40)).min(1).max(10),
   stockQuantity: z.coerce.number().int().min(0).max(100000),
   imageAlt: z.string().trim().max(200).optional().default(''),
-});
+}).refine((data) => new Set(data.sizes.map((value) => value.toLowerCase())).size === data.sizes.length, { path: ['sizes'], message: 'Sizes must not be repeated.' })
+  .refine((data) => new Set(data.colors.map((value) => value.toLowerCase())).size === data.colors.length, { path: ['colors'], message: 'Colours must not be repeated.' });
 
 function readProductForm(formData: FormData) {
   const sizes = String(formData.get('sizes') ?? '').split(',').map((value) => value.trim()).filter(Boolean);

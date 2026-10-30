@@ -27,10 +27,12 @@ export function AdminProductManager({ products, categories }: { products: Produc
     event.preventDefault(); setBusy(true); setMessage(null);
     try {
       if (!photo) throw new Error('Choose a product photo before creating the product.');
+      const form = event.currentTarget;
       const url = await uploadPhoto(photo);
-      const data = new FormData(event.currentTarget); data.set('imageUrl', url);
-      setMessage(await createProduct(data));
-      if ((await Promise.resolve(true))) { event.currentTarget.reset(); setPhoto(null); }
+      const data = new FormData(form); data.set('imageUrl', url);
+      const result = await createProduct(data);
+      setMessage(result);
+      if (result.ok) { form.reset(); setPhoto(null); }
     } catch (error) { setMessage({ ok: false, message: error instanceof Error ? error.message : 'Product could not be created.' }); }
     finally { setBusy(false); }
   }

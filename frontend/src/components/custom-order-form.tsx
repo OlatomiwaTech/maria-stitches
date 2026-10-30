@@ -3,7 +3,6 @@
 import { useState, type FormEvent } from 'react';
 import { ArrowUpRight, ImagePlus, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { createSupabaseBrowserClient } from '@/lib/supabase/browser';
 import { brand, whatsappUrl } from '@/lib/brand';
 
 const categories = ['Dresses and Gowns', 'Two-Piece Outfits', 'Native and Traditional Wear', 'Trousers and Shirts', "Children's Clothing", 'Other'];
@@ -21,24 +20,18 @@ export function CustomOrderForm() {
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault(); setPending(true); setError(''); setSuccess(''); setFallbackLink(null);
     try {
-      let inspirationPath: string | null = null;
-      if (image) {
-        const extension = image.name.split('.').pop()?.toLowerCase() ?? '';
-        const safeExtension = extension === 'jpeg' ? 'jpg' : extension;
-        const supabase = createSupabaseBrowserClient();
-        const path = `pending/${crypto.randomUUID()}.${safeExtension}`;
-        const { error: uploadError } = await supabase.storage.from('custom-inspiration').upload(path, image, { upsert: false, contentType: image.type });
-        if (uploadError) throw new Error('Your photo could not be uploaded. You can still send the enquiry and attach it in WhatsApp.');
-        inspirationPath = path;
-      }
-      const response = await fetch('/api/custom-enquiries', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...form, inspirationPath }) });
+      const payload = new FormData();
+      Object.entries(form).forEach(([key, value]) => payload.set(key, value));
+      if (image) payload.set('inspiration', image);
+      const response = await fetch('/api/custom-enquiries', { method: 'POST', body: payload });
       const data: unknown = await response.json();
       if (!response.ok) {
         const message = data && typeof data === 'object' && 'message' in data && typeof data.message === 'string' ? data.message : 'We could not save your enquiry.';
         throw new Error(message);
       }
       const reference = data && typeof data === 'object' && 'reference' in data && typeof data.reference === 'string' ? data.reference : 'received';
-      setSuccess(`Thank you. Your custom enquiry is saved as ${reference}. You can continue the conversation on WhatsApp.`);
+      const photoWarning = data && typeof data === 'object' && 'photoWarning' in data && typeof data.photoWarning === 'string' ? data.photoWarning : '';
+      setSuccess(`Thank you. Your custom enquiry is saved as ${reference}. You can continue the conversation on WhatsApp.${photoWarning ? ` ${photoWarning}` : ''}`);
       setFallbackLink(whatsappUrl(`${fallbackText}\n\nEnquiry reference: ${reference}`));
     } catch (submitError) {
       setError(submitError instanceof Error ? submitError.message : 'We could not save your enquiry.');
