@@ -1,15 +1,19 @@
 export function customerWhatsAppUrl(phone: string, message: string) {
-  const raw = phone.trim();
-  const digits = raw.replace(/\D/g, '');
-  const normalized = raw.startsWith('+') ? digits : digits.startsWith('0') && digits.length === 11 ? `234${digits.slice(1)}` : digits;
-  if (normalized.length < 8 || normalized.length > 15) return null;
+  const normalized = normalizePhoneNumber(phone);
+  if (!normalized) return null;
   return `https://wa.me/${normalized}?text=${encodeURIComponent(message)}`;
 }
 
 export function siteWhatsAppUrl(number: string, message: string) {
-  const raw = number.trim();
-  const digits = raw.replace(/\D/g, '');
-  const normalized = raw.startsWith('+') ? digits : digits.startsWith('0') && digits.length === 11 ? `234${digits.slice(1)}` : digits;
-  if (normalized.length < 8 || normalized.length > 15) return null;
+  const normalized = normalizePhoneNumber(number);
+  if (!normalized) return null;
   return `https://wa.me/${normalized}?text=${encodeURIComponent(message)}`;
+}
+
+export function normalizePhoneNumber(value: string) {
+  const raw = value.trim();
+  if (!/^[+\d\s().-]+$/.test(raw)) return null;
+  const digits = raw.replace(/\D/g, '');
+  const normalized = !raw.startsWith('+') && digits.startsWith('0') && digits.length === 11 ? `234${digits.slice(1)}` : digits;
+  return /^[1-9]\d{7,14}$/.test(normalized) ? normalized : null;
 }
