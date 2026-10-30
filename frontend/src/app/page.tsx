@@ -6,7 +6,8 @@ import { DemoNotice } from '@/components/demo-notice';
 import { ProductCard } from '@/components/product-card';
 import { getCatalog } from '@/lib/catalog';
 import { demoCategories } from '@/lib/demo-products';
-import { getSiteSettings, siteWhatsAppUrl } from '@/lib/site-settings';
+import { getSiteSettings } from '@/lib/site-settings';
+import { siteWhatsAppUrl } from '@/lib/whatsapp';
 
 export default async function HomePage() {
   const catalog = await getCatalog();

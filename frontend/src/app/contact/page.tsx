@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { MapPin, MessageCircle, Phone } from 'lucide-react';
-import { getSiteSettings, siteWhatsAppUrl } from '@/lib/site-settings';
+import { getSiteSettings } from '@/lib/site-settings';
+import { siteWhatsAppUrl } from '@/lib/whatsapp';
 import { Button } from '@/components/ui/button';
 
 export const metadata: Metadata = { title: 'Contact Maria Stitches', description: 'Contact Maria Stitches in Sango Ota, Ogun State, Nigeria.' };

@@ -53,8 +53,3 @@ function readColor(value: object, key: string, fallback: string) {
   return typeof candidate === 'string' && /^#[\da-f]{6}$/i.test(candidate) ? candidate : fallback;
 }
 
-export function siteWhatsAppUrl(number: string, message: string) {
-  const digits = number.replace(/\D/g, '');
-  if (digits.length < 8 || digits.length > 15) return null;
-  return `https://wa.me/${digits}?text=${encodeURIComponent(message)}`;
-}

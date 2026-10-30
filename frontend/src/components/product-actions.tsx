@@ -4,7 +4,7 @@ import { useMemo, useState } from 'react';
 import { Check, MessageCircle, Plus, ShoppingBag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useCart } from '@/components/cart/cart-provider';
-import { siteWhatsAppUrl } from '@/lib/site-settings';
+import { siteWhatsAppUrl } from '@/lib/whatsapp';
 import type { Product } from '@/lib/types';
 
 export function ProductActions({ product, whatsappNumber }: { product: Product; whatsappNumber: string }) {

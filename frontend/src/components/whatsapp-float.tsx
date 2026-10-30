@@ -1,6 +1,6 @@
 import { MessageCircle } from 'lucide-react';
 import type { SiteSettings } from '@/lib/site-settings';
-import { siteWhatsAppUrl } from '@/lib/site-settings';
+import { siteWhatsAppUrl } from '@/lib/whatsapp';
 
 export function WhatsAppFloat({ settings }: { settings: SiteSettings }) {
   const href = siteWhatsAppUrl(settings.whatsappNumber, `Hello ${settings.businessName}, I would like to ask about a style.`);

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
-import { defaultSiteSettings, siteWhatsAppUrl } from '@/lib/site-settings';
+import { defaultSiteSettings } from '@/lib/site-settings';
+import { siteWhatsAppUrl } from '@/lib/whatsapp';
 import { hasSupabaseConfig, createSupabaseServerClient } from '@/lib/supabase/server';
 import type { Json } from '@/lib/database.types';
 

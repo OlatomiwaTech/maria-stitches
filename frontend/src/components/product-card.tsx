@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { ArrowUpRight, MessageCircle } from 'lucide-react';
 import type { Product } from '@/lib/types';
 import { formatNaira } from '@/lib/utils';
-import { siteWhatsAppUrl } from '@/lib/site-settings';
+import { siteWhatsAppUrl } from '@/lib/whatsapp';
 
 export function ProductCard({ product, whatsappNumber }: { product: Product; whatsappNumber: string }) {
   const firstImage = product.images[0];

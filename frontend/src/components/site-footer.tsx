@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { ArrowUpRight, MessageCircle, Scissors } from 'lucide-react';
 import type { SiteSettings } from '@/lib/site-settings';
-import { siteWhatsAppUrl } from '@/lib/site-settings';
+import { siteWhatsAppUrl } from '@/lib/whatsapp';
 
 export function SiteFooter({ settings }: { settings: SiteSettings }) {
   const chat = siteWhatsAppUrl(settings.whatsappNumber, `Hello ${settings.businessName}, I have a question about your styles.`);

@@ -4,7 +4,7 @@ import { useState, type FormEvent } from 'react';
 import { ArrowUpRight, ImagePlus, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useSiteSettings } from '@/components/site-settings-provider';
-import { siteWhatsAppUrl } from '@/lib/site-settings';
+import { siteWhatsAppUrl } from '@/lib/whatsapp';
 
 const categories = ['Dresses and Gowns', 'Two-Piece Outfits', 'Native and Traditional Wear', 'Trousers and Shirts', "Children's Clothing", 'Other'];
 const imageTypes = ['image/jpeg', 'image/png', 'image/webp'];

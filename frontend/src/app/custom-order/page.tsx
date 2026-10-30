@@ -1,7 +1,8 @@
 import type { Metadata } from 'next';
 import { MessageCircle } from 'lucide-react';
 import { CustomOrderForm } from '@/components/custom-order-form';
-import { getSiteSettings, siteWhatsAppUrl } from '@/lib/site-settings';
+import { getSiteSettings } from '@/lib/site-settings';
+import { siteWhatsAppUrl } from '@/lib/whatsapp';
 
 export const metadata: Metadata = { title: 'Custom-made enquiry', description: 'Tell Maria Stitches about a custom-made outfit you have in mind.' };
 

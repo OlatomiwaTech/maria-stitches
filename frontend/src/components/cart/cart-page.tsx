@@ -7,7 +7,7 @@ import { ArrowLeft, MessageCircle, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { DemoNotice } from '@/components/demo-notice';
 import { useCart } from '@/components/cart/cart-provider';
-import { siteWhatsAppUrl } from '@/lib/site-settings';
+import { siteWhatsAppUrl } from '@/lib/whatsapp';
 import { useSiteSettings } from '@/components/site-settings-provider';
 import { formatNaira } from '@/lib/utils';
 import type { CartLine } from '@/lib/types';
