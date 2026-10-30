@@ -5,7 +5,7 @@ import { useState, type FormEvent } from 'react';
 import { ImagePlus, LoaderCircle, PackagePlus, Save, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { createSupabaseBrowserClient } from '@/lib/supabase/browser';
-import { createProduct, deleteProduct, updateProduct, updateVariantStock, type ActionResult } from '@/app/admin/products/actions';
+import { createProduct, deleteCategory, deleteProduct, saveCategory, updateProduct, updateVariantStock, type ActionResult } from '@/app/admin/products/actions';
 import type { Category, Product } from '@/lib/types';
 
 export function AdminProductManager({ products, categories }: { products: Product[]; categories: Category[] }) {
@@ -60,7 +60,17 @@ export function AdminProductManager({ products, categories }: { products: Produc
     event.preventDefault(); const data = new FormData(event.currentTarget); setMessage(await updateVariantStock(data));
   }
 
+  async function saveCategoryForm(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault(); const form = event.currentTarget; setBusy(true); const data = new FormData(form); const result = await saveCategory(data); setMessage(result); if (result.ok && !data.has('id')) form.reset(); setBusy(false);
+  }
+
+  async function removeCategory(id: string) {
+    if (!window.confirm('Delete this category? Categories that still contain products cannot be deleted.')) return;
+    const data = new FormData(); data.set('id', id); setMessage(await deleteCategory(data));
+  }
+
   return <div className="admin-product-manager">
+    <section className="admin-panel"><h2>Manage categories ({categories.length})</h2><form className="admin-product-form" onSubmit={saveCategoryForm}><label>New category name<input name="name" required minLength={2} maxLength={80} /></label><label>Description (optional)<input name="description" maxLength={300} /></label><label>Display order<input name="sortOrder" type="number" min="0" max="1000" defaultValue="10" /></label><Button type="submit" disabled={busy}><PackagePlus size={14} /> Add category</Button></form><div className="admin-products">{categories.map((category) => <details className="admin-product" key={category.id}><summary>{category.name}<span className="status-pill">{category.isActive ? 'Active' : 'Hidden'}</span></summary><div className="admin-product-detail"><form className="admin-product-form" onSubmit={saveCategoryForm}><input type="hidden" name="id" value={category.id} /><label>Name<input name="name" defaultValue={category.name} required maxLength={80} /></label><label>Description<input name="description" defaultValue={category.description} maxLength={300} /></label><label>Display order<input name="sortOrder" type="number" min="0" max="1000" defaultValue={category.sortOrder} /></label><label>Visibility<select name="isActive" defaultValue={category.isActive ? 'true' : 'false'}><option value="true">Visible in shop</option><option value="false">Hidden</option></select></label><Button type="submit" size="sm" disabled={busy}><Save size={14} /> Save category</Button><Button type="button" size="sm" variant="outline" onClick={() => removeCategory(category.id)}><Trash2 size={14} /> Delete</Button></form></div></details>)}</div></section>
     <section className="admin-panel"><h2>Add a genuine product</h2><p className="form-help">Only enter designs, prices and stock confirmed by Maria Stitches. New products start unpublished.</p><form className="admin-product-form" onSubmit={create}>
       <label>Name<input name="name" required minLength={2} maxLength={120} /></label><label>Category<select name="categoryId" required>{categories.map((category) => <option value={category.id} key={category.id}>{category.name}</option>)}</select></label><label>Price in naira<input name="priceNgn" type="number" min="1" step="1" required /></label><label>Available sizes<input name="sizes" placeholder="S, M, L, XL" required /></label><label>Colours (optional, comma separated)<input name="colors" placeholder="Leave blank if not applicable" /></label><label>Initial stock per size/colour<input name="stockQuantity" type="number" min="0" step="1" defaultValue="0" required /></label><label className="admin-product-description">Description<textarea name="description" rows={3} required minLength={10} maxLength={2000} /></label><label>Photo alt text<input name="imageAlt" maxLength={200} /></label><label className="admin-upload"><ImagePlus size={17} />{photo ? photo.name : 'Choose a product photo'}<input className="sr-only" type="file" accept="image/jpeg,image/png,image/webp" onChange={(event) => setPhoto(event.target.files?.[0] ?? null)} /></label><div className="admin-product-submit"><Button type="submit" disabled={busy}>{busy ? <LoaderCircle className="spin" size={15} /> : <PackagePlus size={15} />} Create product</Button></div>
     </form></section>

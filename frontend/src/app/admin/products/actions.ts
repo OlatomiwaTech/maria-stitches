@@ -82,6 +82,31 @@ export async function deleteProduct(formData: FormData): Promise<ActionResult> {
   return { ok: true, message: 'Product deleted.' };
 }
 
+export async function saveCategory(formData: FormData): Promise<ActionResult> {
+  const idValue = formData.get('id');
+  const parsed = z.object({ name: z.string().trim().min(2).max(80), description: z.string().trim().max(300), sortOrder: z.coerce.number().int().min(0).max(1000) }).safeParse({ name: formData.get('name'), description: formData.get('description') ?? '', sortOrder: formData.get('sortOrder') ?? 0 });
+  if (!parsed.success) return { ok: false, message: parsed.error.issues[0]?.message ?? 'Check the category details.' };
+  const { supabase } = await requireAdmin();
+  const values = { name: parsed.data.name, slug: slugify(parsed.data.name), description: parsed.data.description || null, sort_order: parsed.data.sortOrder, is_active: formData.get('isActive') !== 'false' };
+  const id = z.string().uuid().safeParse(idValue);
+  const result = id.success
+    ? await supabase.from('categories').update(values).eq('id', id.data)
+    : await supabase.from('categories').insert(values);
+  if (result.error) return { ok: false, message: result.error.code === '23505' ? 'A category with that name already exists.' : 'Category could not be saved.' };
+  revalidatePath('/', 'layout'); revalidatePath('/shop'); revalidatePath('/admin/products');
+  return { ok: true, message: id.success ? 'Category updated.' : 'Category added.' };
+}
+
+export async function deleteCategory(formData: FormData): Promise<ActionResult> {
+  const id = z.string().uuid().safeParse(formData.get('id'));
+  if (!id.success) return { ok: false, message: 'Invalid category.' };
+  const { supabase } = await requireAdmin();
+  const { error } = await supabase.from('categories').delete().eq('id', id.data);
+  if (error) return { ok: false, message: 'This category has products or could not be deleted. Deactivate it instead.' };
+  revalidatePath('/', 'layout'); revalidatePath('/shop'); revalidatePath('/admin/products');
+  return { ok: true, message: 'Category deleted.' };
+}
+
 const productSchema = z.object({
   name: z.string().trim().min(2).max(120),
   description: z.string().trim().min(10).max(2000),

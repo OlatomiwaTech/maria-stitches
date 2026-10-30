@@ -3,6 +3,8 @@ export type Category = {
   name: string;
   slug: string;
   description: string;
+  sortOrder?: number;
+  isActive?: boolean;
 };
 
 export type ProductImage = {

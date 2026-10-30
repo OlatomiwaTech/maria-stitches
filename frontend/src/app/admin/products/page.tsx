@@ -23,13 +23,13 @@ export default async function AdminProductsPage() {
     if (!category) return [];
     return [{
       id: product.id, name: product.name, slug: product.slug, description: product.description,
-      category: { id: category.id, name: category.name, slug: category.slug, description: category.description ?? '' },
+      category: { id: category.id, name: category.name, slug: category.slug, description: category.description ?? '', sortOrder: category.sort_order, isActive: category.is_active },
       priceNgn: Number(product.price_ngn), isDemo: product.is_demo, published: product.is_published,
       images: (images ?? []).filter((image) => image.product_id === product.id).map((image) => ({ id: image.id, url: image.image_url, alt: image.alt_text, sourceUrl: image.source_url ?? image.image_url, photographer: image.photographer, license: image.license ?? '' })),
       variants: (variants ?? []).filter((variant) => variant.product_id === product.id).map((variant) => ({ id: variant.id, size: variant.size, color: variant.color, stockQuantity: variant.stock_quantity, available: variant.is_available && variant.stock_quantity > 0 })),
     }];
   });
-  const typedCategories: Category[] = categoryRows.map((category) => ({ id: category.id, name: category.name, slug: category.slug, description: category.description ?? '' }));
+  const typedCategories: Category[] = categoryRows.map((category) => ({ id: category.id, name: category.name, slug: category.slug, description: category.description ?? '', sortOrder: category.sort_order, isActive: category.is_active }));
   const editableCategories = typedCategories.length ? typedCategories : demoCategories;
   return <main className="admin-shell"><div className="admin-heading"><div><span className="eyebrow">CATALOGUE</span><h1 className="story-title">Products.</h1><p>Replace sample details with confirmed product information before publishing.</p></div><Link className="back-home" href="/admin/dashboard">← Dashboard</Link></div><AdminProductManager products={rows} categories={editableCategories} /></main>;
 }

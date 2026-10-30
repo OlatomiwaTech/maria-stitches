@@ -35,7 +35,7 @@ export async function getCatalog(): Promise<CatalogResult> {
         name: row.name,
         slug: row.slug,
         description: row.description,
-        category: { id: category.id, name: category.name, slug: category.slug, description: category.description ?? '' },
+        category: { id: category.id, name: category.name, slug: category.slug, description: category.description ?? '', sortOrder: category.sort_order, isActive: category.is_active },
         priceNgn: Number(row.price_ngn),
         isDemo: row.is_demo,
         published: row.is_published,
